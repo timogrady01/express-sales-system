@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESS PP Scripts</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0c10;--surface:#12151d;--surface2:#1a1e28;--border:#3d4460;--card-bg:#181c28;--accent:#e8a020;--accent2:#f0c060;--green:#22c55e;--yellow:#f59e0b;--red:#ef4444;--blue:#3b82f6;--text:#eceef5;--muted:#7a859a;--radius:10px;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;min-height:100vh;padding-bottom:60px;padding-top:52px;max-width:460px;margin:0 auto;}
+  #ess-nav{position:fixed;top:0;left:0;right:0;width:100%;background:#0d0f14;border-bottom:2px solid #e8a020;display:flex;align-items:center;justify-content:space-between;padding:8px 16px;z-index:999999;font-family:'Barlow Condensed',sans-serif;height:52px;}
+  #ess-nav .nav-logo{font-size:20px;font-weight:900;color:#e8a020;text-decoration:none;letter-spacing:2px;text-transform:uppercase;flex-shrink:0;}
+  #ess-nav .nav-links{display:flex;gap:4px;align-items:center;margin-left:auto;}
+  #ess-nav .nav-links a{font-size:12px;color:#c8d0e0;text-decoration:none;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px;text-transform:uppercase;padding:5px 9px;border-radius:6px;border:1.5px solid transparent;white-space:nowrap;transition:all .2s;}
+  #ess-nav .nav-links a:hover{color:#e8a020;border-color:#e8a020;}
+  #ess-nav .nav-links a.nt{color:#22c55e;border-color:#22c55e;}
+  #ess-nav .nav-links a.mt{color:#ef4444;border-color:#ef4444;}
+  #ess-nav .nav-div{width:1px;height:18px;background:#3d4460;flex-shrink:0;margin:0 3px;}
+  #ess-nav-toggle{display:none;background:none;border:1.5px solid #3d4460;border-radius:6px;color:#e8a020;font-size:18px;padding:3px 9px;cursor:pointer;margin-left:10px;flex-shrink:0;}
+  #ess-drawer{display:none;position:fixed;top:52px;left:0;right:0;background:#0d0f14;border-bottom:2px solid #e8a020;z-index:999998;padding:8px 12px 12px;flex-direction:column;gap:4px;max-height:calc(100vh - 52px);overflow-y:auto;}
+  #ess-drawer.open{display:flex;}
+  #ess-drawer a{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#c8d0e0;text-decoration:none;padding:10px 12px;border-radius:7px;border:1.5px solid #2a2f3d;transition:all .2s;}
+  #ess-drawer a:hover{color:#e8a020;border-color:#e8a020;}
+  #ess-drawer a.nt{color:#22c55e;border-color:#22c55e;}
+  #ess-drawer a.mt{color:#ef4444;border-color:#ef4444;}
+  #ess-drawer .dsec{font-size:10px;color:#3d4460;text-transform:uppercase;letter-spacing:2px;padding:8px 4px 2px;font-family:'Barlow Condensed',sans-serif;font-weight:700;}
+  @media(max-width:800px){#ess-nav .nav-links{display:none!important;}#ess-nav-toggle{display:block;}}
+  .hdr{background:linear-gradient(135deg,#1a1000,#0a0c10);border-bottom:2px solid var(--accent);padding:10px 14px 8px;}
+  .hdr-logo{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;color:var(--accent);}
+  .hdr-sub{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
+  .tab-nav{display:flex;background:var(--surface);border-bottom:2px solid var(--border);}
+  .tab{flex:1;padding:8px 4px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);border-bottom:3px solid transparent;cursor:pointer;transition:all .2s;}
+  .tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .tab-content{display:none;padding:10px;}
+  .tab-content.active{display:block;}
+  .drawer{background:var(--card-bg);border:1.5px solid var(--border);border-radius:var(--radius);margin-bottom:8px;box-shadow:0 2px 12px rgba(0,0,0,.4);overflow:hidden;}
+  .drawer-head{display:flex;align-items:center;justify-content:space-between;padding:13px 14px;cursor:pointer;transition:background .2s;user-select:none;}
+  .drawer-head:hover{background:var(--surface2);}
+  .drawer-head.open{background:var(--surface2);border-bottom:1px solid var(--border);}
+  .drawer-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;letter-spacing:.5px;}
+  .drawer-meta{display:flex;align-items:center;gap:8px;}
+  .drawer-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.5px;}
+  .tag-walk{background:rgba(59,130,246,.15);color:var(--blue);border:1px solid var(--blue);}
+  .tag-desk{background:rgba(232,160,32,.15);color:var(--accent);border:1px solid var(--accent);}
+  .tag-close{background:rgba(34,197,94,.15);color:var(--green);border:1px solid var(--green);}
+  .tag-obj{background:rgba(239,68,68,.15);color:var(--red);border:1px solid var(--red);}
+  .drawer-arrow{color:var(--muted);font-size:14px;transition:transform .25s;}
+  .drawer-head.open .drawer-arrow{transform:rotate(180deg);}
+  .drawer-body{display:none;padding:14px;}
+  .drawer-body.open{display:block;}
+  .script-box{background:rgba(232,160,32,.07);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:12px 13px;margin:8px 0;font-style:italic;color:var(--accent2);font-size:14px;line-height:1.6;}
+  .script-box.green{border-left-color:var(--green);background:rgba(34,197,94,.07);color:#86efac;}
+  .script-box.red{border-left-color:var(--red);background:rgba(239,68,68,.07);color:#fca5a5;}
+  .script-box.blue{border-left-color:var(--blue);background:rgba(59,130,246,.07);color:#93c5fd;}
+  .hook-label{font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin:8px 0 4px;}
+  .note{font-size:12px;color:var(--muted);line-height:1.5;margin-top:6px;padding:8px 10px;background:var(--surface2);border-radius:7px;}
+  .response-label{font-size:11px;color:var(--green);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin:8px 0 4px;}
+  .divider{border:none;border-top:1px solid var(--border);margin:12px 0;}
+</style>
+</head>
+<body>
+<nav id="ess-nav">
+  <a class="nav-logo" href="/">ESS</a>
+  <div class="nav-links">
+    <a href="/big-board.html">Big Board</a>
+    <a href="/fm-floor.html">FM</a>
+    <a href="/greeter.html">Greeter</a>
+    <a href="/library.html">Library</a>
+    <a href="/staff.html">Staff</a>
+    <div class="nav-div"></div>
+    <a href="/cve.html" class="nt">CVE</a>
+    <a href="/pp-scripts.html" class="nt">PP Scripts</a>
+    <a href="/desk-handoff.html" class="nt">Handoff</a>
+    <a href="/sp-training.html" class="nt">Training</a>
+    <div class="nav-div"></div>
+    <a href="/ucm-dashboard.html" class="mt">UCM</a>
+  </div>
+  <button id="ess-nav-toggle" onclick="toggleNav()">☰</button>
+</nav>
+<div id="ess-drawer">
+  <div class="dsec">— Core Tools —</div>
+  <a href="/big-board.html">🏆 Big Board</a>
+  <a href="/fm-floor.html">📋 FM Floor</a>
+  <a href="/greeter.html">👋 Greeter Station</a>
+  <a href="/library.html">📚 Library</a>
+  <a href="/staff.html">👤 Staff</a>
+  <div class="dsec">— CVE & PP Tools —</div>
+  <a href="/cve.html" class="nt">🚗 Customer Vehicle Eval</a>
+  <a href="/pp-scripts.html" class="nt">🪝 PP Scripts</a>
+  <a href="/desk-handoff.html" class="nt">📤 Desk Handoff</a>
+  <a href="/sp-training.html" class="nt">📌 SP Training Card</a>
+  <div class="dsec">— Manager —</div>
+  <a href="/ucm-dashboard.html" class="mt">🔐 UCM Dashboard</a>
+</div>
+<div class="hdr">
+  <div class="hdr-logo">ESS PP SCRIPTS</div>
+  <div class="hdr-sub">Walk-Around · Desk · Objections · Close</div>
+</div>
+<div class="tab-nav">
+  <div class="tab active" onclick="showTab('walk',this)">🚶 WALK</div>
+  <div class="tab" onclick="showTab('desk',this)">🪝 DESK</div>
+  <div class="tab" onclick="showTab('obj',this)">🥊 OBJECTS</div>
+  <div class="tab" onclick="showTab('close',this)">🔒 CLOSE</div>
+</div>
+<div class="tab-content active" id="tab-walk">
+  <div class="drawer"><div class="drawer-head" onclick="toggleDrawer(this)"><div><div class="drawer-title">🪟 Window Tint</div></div><div class="drawer-meta"><span class="drawer-tag tag-walk">WALK</span><span class="drawer-arrow">▼</span></div></div><div class="drawer-body"><div class="hook-label">The Hook</div><div class="script-box">"I can see you have tint on your vehicle — kept it cooler in the Texas heat, protected the dash from fading, gave you some privacy... hasn't it made a difference in your comfort and the condition of the interior?"</div><div class="hook-label">Close It</div><div class="script-box green">"Hasn't it?" — wait for YES. Don't fill the silence. Let them say it.</div><div class="note">✅ When they say YES — check it in the CVE. That YES is your ammo at the desk.</div></div></div>
+  <div class="drawer"><div class="drawer-head" onclick="toggleDrawer(this)"><div><div class="drawer-title">🎨 Paint / Ceramic Coating</div></div><div class="drawer-meta"><span class="drawer-tag tag-walk">WALK</span><span class="drawer-arrow">▼</span></div></div><div class="drawer-body"><div class="hook-label">The Hook</div><div class="script-box">"Your paint still looks pretty solid — if you had a sealant or coating on it, wouldn't you say it was worth protecting that investment? Paint doesn't fix itself — protection does."</div><div class="hook-label">Close It</div><div class="script-box green">"Wouldn't you say it was worth it?" — pause. Let them answer.</div><div class="note">✅ Even SOMEWHAT is a win. Record it in the CVE.</div></div></div>
+  <div class="drawer"><div class="drawer-head" onclick="toggleDrawer(this)"><div><div class="drawer-title">🛋️ Interior Protection</div></div><div class="drawer-meta"><span class="drawer-tag tag-walk">WALK</span><span class="drawer-arrow">▼</span></div></div><div class="drawer-body"><div class="hook-label">The Hook</div><div class="script-box">"Seats and carpet have held up really well — with everyday use, weather, kids... couldn't you see how that interior protection paid off over time?"</div><div class="hook-label">Close It</div><div class="script-box green">"Couldn't you see how that paid off?" — nod slightly. They'll mirror you.</div></div></div>
+  <div class="drawer"><div class="drawer-head" onclick="toggleDrawer(this)"><div><div class="drawer-title">🔩 Wheel Locks</div></div><div class="drawer-meta"><span class="drawer-tag tag-walk">WALK</span><span class="drawer-arrow">▼</span></div></div><div class="drawer-body"><div class="hook-label">The Hook</div><div class="script-box">"Wheels are still on there — wouldn't you agree that knowing they were locked down gave you peace of mind? Wheel theft is real, especially on this style of vehicle."</div><div class="hook-label">Close It</div><div class="script-box green">"Wouldn't you agree it gave you peace of mind?"</div></div></div>
+  <div class="drawer"><div class="drawer-head" onclick="toggleDrawer(this)"><div><div class="drawer-title">🛡️ Dent / Etch Protection</div></div><div class="drawer-meta"><span class="drawer-tag tag-walk">WALK</span><span class="drawer-arrow">▼</span></div></div><div class="drawer-body"><div class="hook-label">The Hook</div><div class="script-box">"No major door dings or etching issues — wouldn't you say having that protection in place has kept small things from becoming expensive problems? Parking lots are not your friend."</div><div class="hook-label">Close It</div><div class="script-box green">"Wouldn't you say it was worth having?"</div></div></div>
+  <div class="drawer" style="border-left:3px solid var(--accent);"><div class="drawer-head" onclick="toggleDrawer(this)"><div><div class="drawer-title">🔒 MASTER CLOSE</div></div><div class="drawer-meta"><span class="drawer-tag tag-close">BIG ONE</span><span class="drawer-arrow">▼</span></div></div><div class="drawer-body"><div class="hook-label">Deliver This After All 5 Products</div><div class="script-box">"So when you think about everything that's kept your trade in the shape it's in today — the tint, the protection, the coatings, the care — wouldn't you say that investing in protecting your vehicle was absolutely worth it?"</div><div class="hook-label">Then Stop Talking</div><div class="script-box green">"Wouldn't you agree?" — SILENCE. First one to speak loses. Wait for YES.</div><div class="note">🎯 This YES closes the door on every desk objection.</div></div></div>
+</div>
+<div class="tab-content" id="tab-desk">
+  <div class="drawer"><div class="drawer-head" onclick="toggleDrawer(this)"><div><div class="drawer-title">📋 Intro at the Desk</div></div><div class="drawer-meta"><span class="drawer-tag tag-desk">DESK</span><span class="drawer-arrow">▼</span></div></div><div class="drawer-body"><div class="script-box blue">"Before we go over numbers — I want to show you something on your new vehicle that's already been taken care of."</div><div class="note">👉 Show the addendum. Point to each item. Don't apologize for it — present it with confidence.</div></div></div>
+  <div class="drawer"><div class="drawer-head" onclick="toggleDrawer(this)"><div><div class="drawer-title">🪟 Tint — Already Installed</div></div><div class="drawer-meta"><span class="drawer-tag tag-desk">DESK</span><span class="drawer-arrow">▼</span></div></div><div class="drawer-body"><div class="script-box">"You can see the tint is already on the vehicle — and this isn't standard dealer tint. This comes with a lifetime guarantee. As long as you own the vehicle, it's covered."</div><div class="hook-label">Reference Their Own Words</div><div class="script-box green">"And you told me out there — it made a real difference on your trade. Wouldn't you want that same benefit on your new vehicle?"</div></div></div>
+  <div class="drawer"><div class="drawer-head" onclick="toggleDrawer(this)"><div><div class="drawer-title">💰 Break It Down Monthly</div></div><div class="drawer-meta"><span class="drawer-tag tag-desk">DESK</span><span class="drawer-arrow">▼</span></div></div><div class="drawer-body"><div class="script-box">"On a 72-month loan, the protection package breaks down to about $19 a month on a used vehicle. That's less than a tank of gas to protect your entire investment."</div><div class="note">Used: $1,400 ÷ 72 = ~$19/mo | New: $2,000 ÷ 72 = ~$28/mo</div><div class="script-box green">"When you look at it that way — it's really a no-brainer, isn't it?"</div></div></div>
+  <div class="drawer"><div class="drawer-head" onclick="toggleDrawer(this)"><div><div class="drawer-title">📈 Resale Value Play</div></div><div class="drawer-meta"><span class="drawer-tag tag-desk">DESK</span><span class="drawer-arrow">▼</span></div></div><div class="drawer-body"><div class="script-box">"You saw it firsthand today — the reason your trade held its value is because it was protected. You're not spending money — you're investing it."</div><div class="hook-label">Tie It Back</div><div class="script-box green">"Doesn't it make sense to protect this one the same way?"</div></div></div>
+  <div class="drawer"><div class="drawer-head" onclick="toggleDrawer(this)"><div><div class="drawer-title">🔒 Can't Remove It</div></div><div class="drawer-meta"><span class="drawer-tag tag-desk">DESK</span><span class="drawer-arrow">▼</span></div></div><div class="drawer-body"><div class="script-box">"The protection package is already on the vehicle. We can't remove the tint, the ceramic coating, the wheel locks — they're part of the unit as it sits."</div><div class="hook-label">Then Immediately Pivot</div><div class="script-box green">"What I can do is make sure you understand everything that's covered — because once you see the full list, I think you'll agree it's a lot of value."</div><div class="note">👉 Show the laminate / benefits sheet right here.</div></div></div>
+</div>
+<div class="tab-content" id="tab-obj">
+  <div class="drawer"><div class="drawer-head" onclick="toggleDrawer(this)"><div><div class="drawer-title">"Can you discount it?"</div></div><div class="drawer-meta"><span class="drawer-tag tag-obj">OBJECTION</span><span class="drawer-arrow">▼</span></div></div><div class="drawer-body"><div class="response-label">Response</div><div class="script-box">"The tint alone carries a lifetime guarantee. If you ever have an issue, one service call covers the cost. The package pays for itself the first time you use it."</div><div class="response-label">Break It Down</div><div class="script-box green">"On your loan that's about $19 a month. I can't discount it — but I can show you exactly why it's worth every dollar. Fair enough?"</div></div></div>
+  <div class="drawer"><div class="drawer-head" onclick="toggleDrawer(this)"><div><div class="drawer-title">"I don't need it"</div></div><div class="drawer-meta"><span class="drawer-tag tag-obj">OBJECTION</span><span class="drawer-arrow">▼</span></div></div><div class="drawer-body"><div class="response-label">Response</div><div class="script-box">"Most people feel that way until something happens. But you said the tint on your trade kept the interior in great shape. You didn't need it until you had it, right?"</div><div class="response-label">The Turn</div><div class="script-box green">"The only difference between needing it and not needing it — is timing. And by then it's too late."</div></div></div>
+  <div class="drawer"><div class="drawer-head" onclick="toggleDrawer(this)"><div><div class="drawer-title">"I can get it cheaper elsewhere"</div></div><div class="drawer-meta"><span class="drawer-tag tag-obj">OBJECTION</span><span class="drawer-arrow">▼</span></div></div><div class="drawer-body"><div class="response-label">Response</div><div class="script-box">"You might find cheaper tint — but cheaper tint doesn't come with a lifetime guarantee backed by us. If there's ever a problem — you come back here and we make it right."</div><div class="response-label">Close</div><div class="script-box green">"That peace of mind — that's what you're really paying for. And you already told me peace of mind matters to you."</div></div></div>
+  <div class="drawer"><div class="drawer-head" onclick="toggleDrawer(this)"><div><div class="drawer-title">"Just take it off the price"</div></div><div class="drawer-meta"><span class="drawer-tag tag-obj">OBJECTION</span><span class="drawer-arrow">▼</span></div></div><div class="drawer-body"><div class="response-label">Response</div><div class="script-box">"It's already on the vehicle. The tint is on the glass, the coating is on the paint, the locks are on the wheels. There's nothing to remove."</div><div class="response-label">Pivot to Value</div><div class="script-box green">"What I can do is walk you through everything that's covered — because when you look at the lifetime warranty and all of it — I think your perspective is going to shift."</div></div></div>
+  <div class="drawer"><div class="drawer-head" onclick="toggleDrawer(this)"><div><div class="drawer-title">"My last car didn't have it"</div></div><div class="drawer-meta"><span class="drawer-tag tag-obj">OBJECTION</span><span class="drawer-arrow">▼</span></div></div><div class="drawer-body"><div class="response-label">Response</div><div class="script-box">"Actually — it did. That's exactly why your trade is in the condition it's in. You told me yourself the interior held up, the paint looks solid. That didn't happen by accident."</div><div class="response-label">Land It</div><div class="script-box green">"So you've already been benefiting from it — you just didn't know it by name."</div></div></div>
+</div>
+<div class="tab-content" id="tab-close">
+  <div class="drawer" style="border-left:3px solid var(--green);"><div class="drawer-head" onclick="toggleDrawer(this)"><div><div class="drawer-title">✅ The Assumptive Close</div></div><div class="drawer-meta"><span class="drawer-tag tag-close">CLOSE</span><span class="drawer-arrow">▼</span></div></div><div class="drawer-body"><div class="script-box">"So we've got the tint, the ceramic coating, the interior protection, wheel locks, and dent coverage — all with lifetime guarantees. I'll make sure all of that is documented on your paperwork."</div><div class="note">👉 Don't ask if they want it. Assume it. Move to the next step. Silence is agreement.</div></div></div>
+  <div class="drawer"><div class="drawer-head" onclick="toggleDrawer(this)"><div><div class="drawer-title">🔁 The Mirror Close</div></div><div class="drawer-meta"><span class="drawer-tag tag-close">CLOSE</span><span class="drawer-arrow">▼</span></div></div><div class="drawer-body"><div class="script-box">"Out at the vehicle you said the tint was worth it. You said the interior held up. You said you had peace of mind with the wheels. That's exactly what this package does — on your new vehicle, starting today."</div><div class="hook-label">The Final Hook</div><div class="script-box green">"You wouldn't want to start off without the same protection you just told me was valuable — would you?"</div></div></div>
+  <div class="drawer"><div class="drawer-head" onclick="toggleDrawer(this)"><div><div class="drawer-title">💵 The Monthly Close</div></div><div class="drawer-meta"><span class="drawer-tag tag-close">CLOSE</span><span class="drawer-arrow">▼</span></div></div><div class="drawer-body"><div class="script-box">"We're talking about $19 a month on a used vehicle — $28 on a new one. For lifetime protection. That's less than one car wash a month."</div><div class="hook-label">Then Ask</div><div class="script-box green">"For less than a car wash a month — you'd want your vehicle protected, right?"</div></div></div>
+  <div class="drawer"><div class="drawer-head" onclick="toggleDrawer(this)"><div><div class="drawer-title">🎯 The Liar's Trap Close</div></div><div class="drawer-meta"><span class="drawer-tag tag-close">CLOSE</span><span class="drawer-arrow">▼</span></div></div><div class="drawer-body"><div class="script-box">"When we were at your trade — you told me the tint was worth it. You told me the protection made a difference. You said yes — it was valuable."</div><div class="hook-label">Land It Directly</div><div class="script-box green">"I'd hate to see you start off on your new vehicle without the same thing you just said you valued. That wouldn't make sense — would it?"</div><div class="note">🎯 They can't say no without contradicting themselves. Silence or yes — either way you win.</div></div></div>
+  <div class="drawer"><div class="drawer-head" onclick="toggleDrawer(this)"><div><div class="drawer-title">🛑 If They Still Say No</div></div><div class="drawer-meta"><span class="drawer-tag tag-obj">LAST RESORT</span><span class="drawer-arrow">▼</span></div></div><div class="drawer-body"><div class="script-box red">"I completely respect that — let me just ask one thing. Is it the value you're questioning, or is it purely the number?"</div><div class="response-label">If It's the Number</div><div class="script-box green">"Let me see what I can do on the monthly payment overall. I'm not going to let $19 a month be the reason we don't do business today."</div><div class="response-label">If It's the Value</div><div class="script-box green">"Let me show you the full laminate one more time — two minutes — and if you still feel the same way, I'll respect that."</div></div></div>
+</div>
+<script>
+function toggleNav(){document.getElementById('ess-drawer').classList.toggle('open');}
+document.querySelectorAll('#ess-drawer a').forEach(a=>a.addEventListener('click',()=>document.getElementById('ess-drawer').classList.remove('open')));
+function showTab(id,el){document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active');el.classList.add('active');}
+function toggleDrawer(head){const body=head.nextElementSibling;const isOpen=head.classList.contains('open');head.classList.toggle('open',!isOpen);body.classList.toggle('open',!isOpen);}
+</script>
+</body>
+</html>
