@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESS UCM Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0c10;--surface:#12151d;--surface2:#1a1e28;--border:#3d4460;--card-bg:#181c28;--accent:#e8a020;--accent2:#f0c060;--green:#22c55e;--yellow:#f59e0b;--red:#ef4444;--blue:#3b82f6;--text:#eceef5;--muted:#7a859a;--radius:10px;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;min-height:100vh;padding-bottom:60px;padding-top:52px;}
+  #ess-nav{position:fixed;top:0;left:0;right:0;width:100%;background:#0d0f14;border-bottom:2px solid #e8a020;display:flex;align-items:center;justify-content:space-between;padding:8px 16px;z-index:999999;font-family:'Barlow Condensed',sans-serif;height:52px;}
+  #ess-nav .nav-logo{font-size:20px;font-weight:900;color:#e8a020;text-decoration:none;letter-spacing:2px;text-transform:uppercase;flex-shrink:0;}
+  #ess-nav .nav-links{display:flex;gap:4px;align-items:center;margin-left:auto;}
+  #ess-nav .nav-links a{font-size:12px;color:#c8d0e0;text-decoration:none;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px;text-transform:uppercase;padding:5px 9px;border-radius:6px;border:1.5px solid transparent;white-space:nowrap;transition:all .2s;}
+  #ess-nav .nav-links a:hover{color:#e8a020;border-color:#e8a020;}
+  #ess-nav .nav-links a.nt{color:#22c55e;border-color:#22c55e;}
+  #ess-nav .nav-links a.mt{color:#ef4444;border-color:#ef4444;}
+  #ess-nav .nav-div{width:1px;height:18px;background:#3d4460;flex-shrink:0;margin:0 3px;}
+  #ess-nav-toggle{display:none;background:none;border:1.5px solid #3d4460;border-radius:6px;color:#e8a020;font-size:18px;padding:3px 9px;cursor:pointer;margin-left:10px;flex-shrink:0;}
+  #ess-drawer{display:none;position:fixed;top:52px;left:0;right:0;background:#0d0f14;border-bottom:2px solid #e8a020;z-index:999998;padding:8px 12px 12px;flex-direction:column;gap:4px;max-height:calc(100vh - 52px);overflow-y:auto;}
+  #ess-drawer.open{display:flex;}
+  #ess-drawer a{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#c8d0e0;text-decoration:none;padding:10px 12px;border-radius:7px;border:1.5px solid #2a2f3d;transition:all .2s;}
+  #ess-drawer a:hover{color:#e8a020;border-color:#e8a020;}
+  #ess-drawer a.nt{color:#22c55e;border-color:#22c55e;}
+  #ess-drawer a.mt{color:#ef4444;border-color:#ef4444;}
+  #ess-drawer .dsec{font-size:10px;color:#3d4460;text-transform:uppercase;letter-spacing:2px;padding:8px 4px 2px;font-family:'Barlow Condensed',sans-serif;font-weight:700;}
+  @media(max-width:800px){#ess-nav .nav-links{display:none!important;}#ess-nav-toggle{display:block;}}
+  .pin-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 52px);padding:30px 20px;}
+  .pin-logo{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:32px;color:var(--accent);margin-bottom:4px;}
+  .pin-sub{font-size:12px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:40px;}
+  .pin-box{background:var(--card-bg);border:1.5px solid var(--border);border-radius:var(--radius);padding:28px 24px;width:100%;max-width:320px;box-shadow:0 4px 30px rgba(0,0,0,.6);}
+  .pin-label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;text-align:center;}
+  .pin-input{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;color:var(--text);padding:14px;font-size:28px;font-family:'Barlow Condensed',sans-serif;font-weight:700;text-align:center;letter-spacing:8px;outline:none;margin-bottom:14px;}
+  .pin-input:focus{border-color:var(--accent);}
+  .pin-btn{width:100%;background:var(--accent);color:#000;border:none;border-radius:8px;padding:13px;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:16px;letter-spacing:1px;cursor:pointer;text-transform:uppercase;}
+  .pin-btn:hover{background:var(--accent2);}
+  .pin-error{color:var(--red);font-size:13px;text-align:center;margin-top:10px;display:none;}
+  .dashboard{display:none;}
+  .dash-header{background:linear-gradient(135deg,#1a1000,#0a0c10);border-bottom:2px solid var(--accent);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;}
+  .dash-logo{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;color:var(--accent);}
+  .dash-sub{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+  .dash-logout{font-size:12px;color:var(--muted);cursor:pointer;padding:6px 10px;border:1px solid var(--border);border-radius:6px;}
+  .dash-logout:hover{color:var(--red);border-color:var(--red);}
+  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px 10px 0;}
+  .stat-card{background:var(--card-bg);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px 8px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.4);}
+  .stat-num{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;}
+  .stat-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+  .filter-bar{display:flex;gap:6px;padding:10px 10px 0;overflow-x:auto;scrollbar-width:none;}
+  .filter-bar::-webkit-scrollbar{display:none;}
+  .filter-btn{white-space:nowrap;padding:6px 12px;border-radius:20px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;border:1.5px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;transition:all .2s;text-transform:uppercase;letter-spacing:.5px;}
+  .filter-btn.active{background:var(--accent);color:#000;border-color:var(--accent);}
+  .submissions{padding:10px;}
+  .sub-card{background:var(--card-bg);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;box-shadow:0 2px 12px rgba(0,0,0,.4);cursor:pointer;transition:border-color .2s;}
+  .sub-card:hover{border-color:var(--accent);}
+  .sub-card.pp-yes{border-left:4px solid var(--green);}
+  .sub-card.pp-somewhat{border-left:4px solid var(--yellow);}
+  .sub-card.pp-hesitant{border-left:4px solid var(--red);}
+  .sub-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+  .sub-vehicle{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:17px;}
+  .sub-time{font-size:11px;color:var(--muted);}
+  .sub-sp{font-size:13px;color:var(--muted);margin-bottom:8px;}
+  .sub-tags{display:flex;gap:6px;flex-wrap:wrap;}
+  .tag{padding:3px 9px;border-radius:12px;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+  .tag-green{background:rgba(34,197,94,.15);color:var(--green);border:1px solid var(--green);}
+  .tag-yellow{background:rgba(245,158,11,.15);color:var(--yellow);border:1px solid var(--yellow);}
+  .tag-red{background:rgba(239,68,68,.15);color:var(--red);border:1px solid var(--red);}
+  .tag-blue{background:rgba(59,130,246,.15);color:var(--blue);border:1px solid var(--blue);}
+  .tag-gray{background:rgba(122,133,154,.15);color:var(--muted);border:1px solid var(--border);}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;overflow-y:auto;padding:20px 10px;}
+  .modal-overlay.open{display:block;}
+  .modal{background:var(--card-bg);border:1.5px solid var(--border);border-radius:var(--radius);max-width:500px;margin:0 auto;box-shadow:0 8px 40px rgba(0,0,0,.8);}
+  .modal-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+  .modal-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:18px;color:var(--accent);}
+  .modal-close{font-size:22px;color:var(--muted);cursor:pointer;line-height:1;}
+  .modal-close:hover{color:var(--red);}
+  .modal-body{padding:16px;}
+  .detail-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;}
+  .detail-row:last-child{border-bottom:none;}
+  .detail-key{color:var(--muted);}
+  .detail-val{font-weight:600;text-align:right;max-width:60%;}
+  .section-head{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:2px;padding:12px 0 6px;border-top:1px solid var(--border);margin-top:6px;}
+  .pp-item{display:flex;justify-content:space-between;padding:7px 0;font-size:13px;border-bottom:1px solid var(--border);}
+  .pp-item:last-child{border-bottom:none;}
+  .empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
+  .loading{text-align:center;padding:40px;color:var(--muted);font-size:14px;}
+  .refresh-btn{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;cursor:pointer;text-transform:uppercase;letter-spacing:.5px;}
+  .refresh-btn:hover{border-color:var(--accent);color:var(--accent);}
+</style>
+</head>
+<body>
+<nav id="ess-nav">
+  <a class="nav-logo" href="/">ESS</a>
+  <div class="nav-links">
+    <a href="/big-board.html">Big Board</a>
+    <a href="/fm-floor.html">FM</a>
+    <a href="/greeter.html">Greeter</a>
+    <a href="/library.html">Library</a>
+    <a href="/staff.html">Staff</a>
+    <div class="nav-div"></div>
+    <a href="/cve.html" class="nt">CVE</a>
+    <a href="/pp-scripts.html" class="nt">PP Scripts</a>
+    <a href="/desk-handoff.html" class="nt">Handoff</a>
+    <a href="/sp-training.html" class="nt">Training</a>
+    <div class="nav-div"></div>
+    <a href="/ucm-dashboard.html" class="mt">UCM</a>
+  </div>
+  <button id="ess-nav-toggle" onclick="toggleNav()">☰</button>
+</nav>
+<div id="ess-drawer">
+  <div class="dsec">— Core Tools —</div>
+  <a href="/big-board.html">🏆 Big Board</a>
+  <a href="/fm-floor.html">📋 FM Floor</a>
+  <a href="/greeter.html">👋 Greeter Station</a>
+  <a href="/library.html">📚 Library</a>
+  <a href="/staff.html">👤 Staff</a>
+  <div class="dsec">— CVE & PP Tools —</div>
+  <a href="/cve.html" class="nt">🚗 Customer Vehicle Eval</a>
+  <a href="/pp-scripts.html" class="nt">🪝 PP Scripts</a>
+  <a href="/desk-handoff.html" class="nt">📤 Desk Handoff</a>
+  <a href="/sp-training.html" class="nt">📌 SP Training Card</a>
+  <div class="dsec">— Manager —</div>
+  <a href="/ucm-dashboard.html" class="mt">🔐 UCM Dashboard</a>
+</div>
+
+<div class="pin-screen" id="pin-screen">
+  <div class="pin-logo">ESS UCM</div>
+  <div class="pin-sub">Manager Dashboard</div>
+  <div class="pin-box">
+    <div class="pin-label">Enter PIN to Access</div>
+    <input type="password" class="pin-input" id="pin-input" maxlength="4" placeholder="••••" onkeyup="if(event.key==='Enter')checkPin()">
+    <button class="pin-btn" onclick="checkPin()">ENTER DASHBOARD</button>
+    <div class="pin-error" id="pin-error">❌ Incorrect PIN — Try Again</div>
+  </div>
+</div>
+
+<div class="dashboard" id="dashboard">
+  <div class="dash-header">
+    <div><div class="dash-logo">UCM DASHBOARD</div><div class="dash-sub">CVE Submissions — Live</div></div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <div class="refresh-btn" onclick="loadSubmissions()">↻ REFRESH</div>
+      <div class="dash-logout" onclick="logout()">LOCK</div>
+    </div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-num" id="stat-total" style="color:var(--accent);">0</div><div class="stat-label">Total Today</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-yes" style="color:var(--green);">0</div><div class="stat-label">PP YES</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-somewhat" style="color:var(--yellow);">0</div><div class="stat-label">SOMEWHAT</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-hesitant" style="color:var(--red);">0</div><div class="stat-label">HESITANT</div></div>
+  </div>
+  <div class="filter-bar">
+    <div class="filter-btn active" onclick="setFilter('all',this)">ALL</div>
+    <div class="filter-btn" onclick="setFilter('yes',this)">✅ PP YES</div>
+    <div class="filter-btn" onclick="setFilter('somewhat',this)">😐 SOMEWHAT</div>
+    <div class="filter-btn" onclick="setFilter('no',this)">🤷 HESITANT</div>
+    <div class="filter-btn" onclick="setFilter('onsite',this)">📍 ON SITE</div>
+    <div class="filter-btn" onclick="setFilter('unseen',this)">📱 SITE UNSEEN</div>
+  </div>
+  <div class="submissions" id="submissions-list"><div class="loading">Loading submissions...</div></div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">CVE Detail</div>
+      <div class="modal-close" onclick="closeModalDirect()">✕</div>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, getDocs, orderBy, query, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyDdd6AGUGEdDsvtVB49kfYEyHaVJ5GwIhI",
+    authDomain: "express-sales-system.firebaseapp.com",
+    databaseURL: "https://express-sales-system-default-rtdb.firebaseio.com",
+    projectId: "express-sales-system",
+    storageBucket: "express-sales-system.firebasestorage.app",
+    messagingSenderId: "19982387786",
+    appId: "1:19982387786:web:2171af2fa7597f3c1bb4b3",
+    measurementId: "G-7E8W4EFD0R"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  window.__db=db;window.__collection=collection;window.__getDocs=getDocs;
+  window.__query=query;window.__orderBy=orderBy;window.__limit=limit;
+</script>
+
+<script>
+const CORRECT_PIN='3350';
+let allSubmissions=[];
+let currentFilter='all';
+function toggleNav(){document.getElementById('ess-drawer').classList.toggle('open');}
+document.querySelectorAll('#ess-drawer a').forEach(a=>a.addEventListener('click',()=>document.getElementById('ess-drawer').classList.remove('open')));
+function checkPin(){const val=document.getElementById('pin-input').value.trim();if(val===CORRECT_PIN){document.getElementById('pin-screen').style.display='none';document.getElementById('dashboard').style.display='block';loadSubmissions();}else{document.getElementById('pin-error').style.display='block';document.getElementById('pin-input').value='';setTimeout(()=>document.getElementById('pin-error').style.display='none',3000);}}
+function logout(){document.getElementById('dashboard').style.display='none';document.getElementById('pin-screen').style.display='flex';document.getElementById('pin-input').value='';}
+async function loadSubmissions(){document.getElementById('submissions-list').innerHTML='<div class="loading">↻ Loading...</div>';try{const q=window.__query(window.__collection(window.__db,'cve_submissions'),window.__orderBy('submittedAt','desc'),window.__limit(100));const snap=await window.__getDocs(q);allSubmissions=[];snap.forEach(doc=>allSubmissions.push({id:doc.id,...doc.data()}));updateStats();renderList();}catch(e){document.getElementById('submissions-list').innerHTML='<div class="loading">⚠️ Error loading — check Firebase.</div>';console.error(e);}}
+function updateStats(){const today=new Date().toISOString().split('T')[0];const t=allSubmissions.filter(s=>(s.submittedAt||'').startsWith(today));document.getElementById('stat-total').textContent=t.length;document.getElementById('stat-yes').textContent=t.filter(s=>s.masterHook==='yes').length;document.getElementById('stat-somewhat').textContent=t.filter(s=>s.masterHook==='somewhat').length;document.getElementById('stat-hesitant').textContent=t.filter(s=>s.masterHook==='no').length;}
+function setFilter(f,el){currentFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderList();}
+function renderList(){let items=[...allSubmissions];if(currentFilter==='yes')items=items.filter(s=>s.masterHook==='yes');else if(currentFilter==='somewhat')items=items.filter(s=>s.masterHook==='somewhat');else if(currentFilter==='no')items=items.filter(s=>s.masterHook==='no');else if(currentFilter==='onsite')items=items.filter(s=>s.mode==='onsite');else if(currentFilter==='unseen')items=items.filter(s=>s.mode==='unseen');if(!items.length){document.getElementById('submissions-list').innerHTML='<div class="empty-state"><div style="font-size:48px;margin-bottom:12px;">📋</div><div>No submissions found</div></div>';return;}document.getElementById('submissions-list').innerHTML=items.map(s=>{const ppClass=s.masterHook==='yes'?'pp-yes':s.masterHook==='somewhat'?'pp-somewhat':s.masterHook==='no'?'pp-hesitant':'';const ppTag=s.masterHook==='yes'?'<span class="tag tag-green">✅ PP YES</span>':s.masterHook==='somewhat'?'<span class="tag tag-yellow">😐 SOMEWHAT</span>':s.masterHook==='no'?'<span class="tag tag-red">🤷 HESITANT</span>':'<span class="tag tag-gray">PP N/A</span>';const modeTag=s.mode==='onsite'?'<span class="tag tag-blue">📍 ON SITE</span>':'<span class="tag tag-yellow">📱 SITE UNSEEN</span>';const timeStr=s.submittedAt?new Date(s.submittedAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'—';const dateStr=s.submittedAt?new Date(s.submittedAt).toLocaleDateString([],{month:'short',day:'numeric'}):'—';const miles=s.miles?parseInt(s.miles).toLocaleString()+' mi':'—';const ppYeses=s.ppResponses?Object.values(s.ppResponses).filter(v=>v==='yes').length:0;const ppTag2=ppYeses>0?`<span class="tag tag-green">🪝 ${ppYeses} YES</span>`:'';return`<div class="sub-card ${ppClass}" onclick="showDetail('${s.id}')"><div class="sub-top"><div class="sub-vehicle">${s.vehicle||'Unknown'}</div><div class="sub-time">${dateStr} ${timeStr}</div></div><div class="sub-sp">SP: ${s.sp||'—'} · ${miles}</div><div class="sub-tags">${ppTag} ${modeTag} ${ppTag2}</div></div>`;}).join('');}
+function showDetail(id){const s=allSubmissions.find(x=>x.id===id);if(!s)return;const ppNames={'pp-tint':'Window Tint','pp-paint':'Paint/Ceramic','pp-interior':'Interior','pp-wheels':'Wheel Locks','pp-dent':'Dent/Etch'};const ppRows=s.ppResponses?Object.entries(s.ppResponses).map(([k,v])=>{const color=v==='yes'?'var(--green)':v==='somewhat'?'var(--yellow)':'var(--red)';const label=v==='yes'?'✅ YES':v==='somewhat'?'😐 SOMEWHAT':'🤷 INDIFFERENT';return`<div class="pp-item"><div>${ppNames[k]||k}</div><div style="color:${color};font-weight:700;">${label}</div></div>`;}).join(''):'<div style="color:var(--muted);font-size:13px;">No PP responses</div>';const masterColor=s.masterHook==='yes'?'var(--green)':s.masterHook==='somewhat'?'var(--yellow)':'var(--red)';const masterLabel=s.masterHook==='yes'?'✅ YES — STRONG CLOSE':s.masterHook==='somewhat'?'😐 SOMEWHAT':'🤷 HESITANT';const qaRows=s.qa?Object.entries(s.qa).filter(([k,v])=>v).map(([k,v])=>{const labels={qa1:'Ownership',qa2:'Accidents',qa3:'Mechanical',qa4:'Loan',qa5:'Keys',qa6:'Mods'};return`<div class="detail-row"><div class="detail-key">${labels[k]||k}</div><div class="detail-val">${v}</div></div>`;}).join(''):'';document.getElementById('modal-title').textContent=s.vehicle||'CVE Detail';document.getElementById('modal-body').innerHTML=`<div class="detail-row"><div class="detail-key">SP</div><div class="detail-val">${s.sp||'—'}</div></div><div class="detail-row"><div class="detail-key">Date</div><div class="detail-val">${s.date||'—'}</div></div><div class="detail-row"><div class="detail-key">Miles</div><div class="detail-val">${s.miles?parseInt(s.miles).toLocaleString():'—'}</div></div><div class="detail-row"><div class="detail-key">Mode</div><div class="detail-val">${s.mode==='onsite'?'📍 On Site':'📱 Site Unseen'}</div></div><div class="detail-row"><div class="detail-key">VIN</div><div class="detail-val" style="font-size:11px;">${s.vin||'—'}</div></div><div class="section-head">PP Master Hook</div><div style="text-align:center;padding:10px 0;font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:${masterColor};">${masterLabel}</div><div class="section-head">PP Responses</div>${ppRows}${qaRows?`<div class="section-head">Q&A</div>${qaRows}`:''}`;document.getElementById('modal-overlay').classList.add('open');}
+function closeModal(e){if(e.target===document.getElementById('modal-overlay'))closeModalDirect();}
+function closeModalDirect(){document.getElementById('modal-overlay').classList.remove('open');}
+setInterval(()=>{if(document.getElementById('dashboard').style.display!=='none')loadSubmissions();},60000);
+</script>
+</body>
+</html>
