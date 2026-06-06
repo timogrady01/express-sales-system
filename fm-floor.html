@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESS — FM Floor</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0c10;--surface:#12151d;--surface2:#1a1e28;--border:#3d4460;
+    --card-bg:#181c28;--accent:#e8a020;--accent2:#f0c060;--green:#22c55e;
+    --yellow:#f59e0b;--red:#ef4444;--blue:#3b82f6;--text:#eceef5;--muted:#7a859a;--radius:10px;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;min-height:100vh;padding-bottom:60px;padding-top:64px;}
+  #ess-nav{position:fixed;top:0;left:0;right:0;width:100%;background:#0d0f14;border-bottom:3px solid #e8a020;display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:999999;font-family:'Barlow Condensed',sans-serif;height:64px;}
+  #ess-nav .nav-logo{font-size:32px;font-weight:900;color:#e8a020;text-decoration:none;letter-spacing:3px;text-transform:uppercase;flex-shrink:0;}
+  #ess-nav .nav-links{display:flex;gap:6px;align-items:center;margin-left:auto;}
+  #ess-nav .nav-links a{font-size:15px;color:#dde3ee;text-decoration:none;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;text-transform:uppercase;padding:6px 12px;border-radius:6px;border:2px solid transparent;white-space:nowrap;transition:all .2s;}
+  #ess-nav .nav-links a:hover{color:#e8a020;border-color:#e8a020;}
+  #ess-nav .nav-links a.nt{color:#22c55e;border-color:#22c55e;}
+  #ess-nav .nav-links a.mt{color:#ef4444;border-color:#ef4444;}
+  #ess-nav .nav-div{width:2px;height:24px;background:#3d4460;flex-shrink:0;margin:0 4px;}
+  #ess-nav-toggle{display:none;background:none;border:2px solid #3d4460;border-radius:6px;color:#e8a020;font-size:22px;padding:4px 10px;cursor:pointer;margin-left:10px;flex-shrink:0;}
+  #ess-drawer{display:none;position:fixed;top:64px;left:0;right:0;background:#0d0f14;border-bottom:3px solid #e8a020;z-index:999998;padding:10px 14px 14px;flex-direction:column;gap:6px;max-height:calc(100vh - 64px);overflow-y:auto;}
+  #ess-drawer.open{display:flex;}
+  #ess-drawer a{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#dde3ee;text-decoration:none;padding:12px 14px;border-radius:7px;border:2px solid #2a2f3d;transition:all .2s;}
+  #ess-drawer a:hover{color:#e8a020;border-color:#e8a020;}
+  #ess-drawer a.nt{color:#22c55e;border-color:#22c55e;}
+  #ess-drawer a.mt{color:#ef4444;border-color:#ef4444;}
+  #ess-drawer .dsec{font-size:11px;color:#3d4460;text-transform:uppercase;letter-spacing:2px;padding:8px 4px 2px;font-family:'Barlow Condensed',sans-serif;font-weight:700;}
+  @media(max-width:900px){#ess-nav .nav-links{display:none!important;}#ess-nav-toggle{display:block;}}
+
+  .fm-header{background:linear-gradient(135deg,#1a1000,#0d0f14);border-bottom:3px solid var(--accent);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  .fm-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:32px;color:var(--accent);text-transform:uppercase;letter-spacing:3px;}
+  .fm-sub{font-size:14px;color:#dde3ee;margin-top:2px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;}
+  .fm-dt{font-size:16px;color:#dde3ee;font-family:'Barlow Condensed',sans-serif;font-weight:600;text-align:right;}
+
+  /* STATS ROW */
+  .stats-row{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;padding:14px 20px;background:var(--surface);border-bottom:1px solid var(--border);}
+  .stat-box{background:var(--card-bg);border:2px solid var(--border);border-radius:var(--radius);padding:12px;text-align:center;}
+  .stat-num{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:900;line-height:1;}
+  .stat-lbl{font-size:12px;color:#dde3ee;text-transform:uppercase;letter-spacing:1px;margin-top:4px;font-family:'Barlow Condensed',sans-serif;font-weight:700;}
+
+  /* TEAM FILTERS */
+  .team-bar{display:flex;gap:8px;padding:12px 20px;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap;align-items:center;}
+  .team-btn{padding:8px 20px;border-radius:8px;border:2px solid var(--border);background:transparent;color:#dde3ee;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;cursor:pointer;text-transform:uppercase;letter-spacing:1px;transition:all .2s;}
+  .team-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .team-btn.active{background:var(--accent);color:#000;border-color:var(--accent);}
+  .team-btn.a.active{background:#ef4444;border-color:#ef4444;color:#fff;}
+  .team-btn.b.active{background:#3b82f6;border-color:#3b82f6;color:#fff;}
+  .team-btn.c.active{background:#22c55e;border-color:#22c55e;color:#000;}
+  .today-badge{font-size:11px;background:var(--green);color:#000;padding:2px 8px;border-radius:10px;font-weight:700;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;margin-left:4px;}
+  .add-up-btn{margin-left:auto;padding:8px 18px;border-radius:8px;border:2px solid var(--green);background:transparent;color:var(--green);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;cursor:pointer;text-transform:uppercase;transition:all .2s;}
+  .add-up-btn:hover{background:rgba(34,197,94,.1);}
+
+  /* SP GRID */
+  .sp-wrap{padding:16px 20px;}
+  .fm-section-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:#dde3ee;text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+  .sp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:20px;}
+  .sp-card{background:var(--card-bg);border:2px solid var(--border);border-radius:var(--radius);padding:14px;cursor:pointer;transition:all .2s;}
+  .sp-card:hover{border-color:var(--accent);}
+  .sp-card.available-n{border-color:#22c55e;}
+  .sp-card.available-s{border-color:#22c55e;}
+  .sp-card.with-customer{border-color:#e8a020;}
+  .sp-card.bdc{border-color:#3b82f6;}
+  .sp-card.service{border-color:#8b5cf6;}
+  .sp-card.break{border-color:#6b7280;}
+  .sp-card.off{border-color:#374151;opacity:.5;}
+  .sp-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;color:#ffffff;}
+  .sp-status{font-size:13px;font-weight:700;margin-top:6px;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.5px;}
+  .sp-status.available-n,.sp-status.available-s{color:#22c55e;}
+  .sp-status.with-customer{color:#e8a020;}
+  .sp-status.bdc{color:#3b82f6;}
+  .sp-status.service{color:#8b5cf6;}
+  .sp-status.break{color:#9ca3af;}
+  .sp-status.off{color:#6b7280;}
+  .sp-time{font-size:11px;color:var(--muted);margin-top:3px;}
+  .sp-ups{font-size:12px;color:#dde3ee;margin-top:4px;font-weight:600;}
+
+  /* STATUS MODAL */
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:99999;padding:16px;}
+  .modal{background:var(--card-bg);border:2px solid var(--border);border-radius:var(--radius);padding:24px;width:100%;max-width:400px;}
+  .modal h2{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:var(--accent);margin-bottom:16px;text-transform:uppercase;}
+  .status-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+  .status-opt{padding:12px;border-radius:8px;border:2px solid var(--border);background:transparent;color:#dde3ee;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;cursor:pointer;text-transform:uppercase;transition:all .2s;text-align:center;}
+  .status-opt:hover{border-color:var(--accent);color:var(--accent);}
+  .status-opt.sel{background:var(--accent);color:#000;border-color:var(--accent);}
+  .mf{margin-bottom:12px;}
+  .mf label{display:block;font-size:11px;color:#dde3ee;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-family:'Barlow Condensed',sans-serif;font-weight:700;}
+  .mf input,.mf select{width:100%;background:var(--surface2);border:2px solid var(--border);border-radius:7px;color:#ffffff;padding:10px 12px;font-size:14px;font-family:'Barlow',sans-serif;outline:none;}
+  .modal-btns{display:flex;gap:8px;justify-content:flex-end;}
+  .btn-cancel{padding:9px 20px;border-radius:8px;border:2px solid var(--border);background:transparent;color:#dde3ee;cursor:pointer;font-size:14px;font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;}
+  .btn-save{padding:9px 20px;border-radius:8px;border:none;background:var(--accent);color:#000;cursor:pointer;font-size:14px;font-weight:700;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;}
+
+  .up-modal .status-opt{font-size:13px;padding:10px 8px;}
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:2px solid var(--accent);color:var(--accent);padding:12px 22px;border-radius:8px;font-size:16px;font-weight:700;z-index:999999;display:none;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:1px;}
+</style>
+</head>
+<body>
+
+<nav id="ess-nav">
+  <a class="nav-logo" href="/">ESS</a>
+  <div class="nav-links">
+    <a href="/big-board.html">Big Board</a>
+    <a href="/fm-floor.html">FM</a>
+    <a href="/greeter.html">Greeter</a>
+    <a href="/library.html">Library</a>
+    <a href="/staff.html">Staff</a>
+    <div class="nav-div"></div>
+    <a href="/cve.html" class="nt">CVE</a>
+    <a href="/pp-scripts.html" class="nt">PP Scripts</a>
+    <a href="/desk-handoff.html" class="nt">Handoff</a>
+    <a href="/sp-training.html" class="nt">Training</a>
+    <div class="nav-div"></div>
+    <a href="/ucm-dashboard.html" class="mt">UCM</a>
+  </div>
+  <button id="ess-nav-toggle" onclick="toggleNav()">☰</button>
+</nav>
+
+<div id="ess-drawer">
+  <div class="dsec">— Core Tools —</div>
+  <a href="/big-board.html">🏆 Big Board</a>
+  <a href="/fm-floor.html">📋 FM Floor</a>
+  <a href="/greeter.html">👋 Greeter Station</a>
+  <a href="/library.html">📚 Library</a>
+  <a href="/staff.html">👤 Staff</a>
+  <div class="dsec">— CVE & PP Tools —</div>
+  <a href="/cve.html" class="nt">🚗 Customer Vehicle Eval</a>
+  <a href="/pp-scripts.html" class="nt">🪝 PP Scripts</a>
+  <a href="/desk-handoff.html" class="nt">📤 Desk Handoff</a>
+  <a href="/sp-training.html" class="nt">📌 SP Training Card</a>
+  <div class="dsec">— Manager —</div>
+  <a href="/ucm-dashboard.html" class="mt">🔐 UCM Dashboard</a>
+</div>
+
+<div class="fm-header">
+  <div>
+    <div class="fm-title">FM Floor</div>
+    <div class="fm-sub">Floor Manager View — Pat Lobb Toyota McKinney</div>
+  </div>
+  <div class="fm-dt" id="fm-dt"></div>
+</div>
+
+<div class="stats-row">
+  <div class="stat-box"><div class="stat-num" id="st-total" style="color:var(--accent)">0</div><div class="stat-lbl">Total SPs</div></div>
+  <div class="stat-box"><div class="stat-num" id="st-avail" style="color:var(--green)">0</div><div class="stat-lbl">Available</div></div>
+  <div class="stat-box"><div class="stat-num" id="st-cust" style="color:var(--accent)">0</div><div class="stat-lbl">With Customer</div></div>
+  <div class="stat-box"><div class="stat-num" id="st-bdc" style="color:var(--blue)">0</div><div class="stat-lbl">BDC / Phone</div></div>
+  <div class="stat-box"><div class="stat-num" id="st-svc" style="color:var(--yellow)">0</div><div class="stat-lbl">Service Lane</div></div>
+  <div class="stat-box"><div class="stat-num" id="st-ups" style="color:var(--red)">0</div><div class="stat-lbl">Ups Today</div></div>
+</div>
+
+<div class="team-bar">
+  <button class="team-btn active" onclick="setTeam('all')" id="tb-all">All SPs</button>
+  <button class="team-btn a" onclick="setTeam('A')" id="tb-A">A Team <span id="badge-A" class="today-badge" style="display:none">TODAY</span></button>
+  <button class="team-btn b" onclick="setTeam('B')" id="tb-B">B Team <span id="badge-B" class="today-badge" style="display:none">TODAY</span></button>
+  <button class="team-btn c" onclick="setTeam('C')" id="tb-C">C Team <span id="badge-C" class="today-badge" style="display:none">TODAY</span></button>
+  <button class="add-up-btn" onclick="openUpModal()">+ Log Up</button>
+</div>
+
+<div class="sp-wrap" id="sp-wrap"></div>
+
+<!-- SP STATUS MODAL -->
+<div id="sp-modal" class="modal-bg" style="display:none;">
+  <div class="modal">
+    <h2 id="sp-modal-name">Update Status</h2>
+    <div class="status-grid">
+      <button class="status-opt" onclick="selStatus('available-n')">🟢 Available — North</button>
+      <button class="status-opt" onclick="selStatus('available-s')">🟢 Available — South</button>
+      <button class="status-opt" onclick="selStatus('with-customer')">🟡 With Customer</button>
+      <button class="status-opt" onclick="selStatus('bdc')">🔵 BDC / Phone</button>
+      <button class="status-opt" onclick="selStatus('service')">🟣 Service Lane</button>
+      <button class="status-opt" onclick="selStatus('break')">⚪ Break / Lunch</button>
+      <button class="status-opt" onclick="selStatus('off')" style="grid-column:1/-1;">⚫ Off Today</button>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="document.getElementById('sp-modal').style.display='none'">Cancel</button>
+      <button class="btn-save" onclick="saveStatus()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOG UP MODAL -->
+<div id="up-modal" class="modal-bg" style="display:none;">
+  <div class="modal up-modal">
+    <h2>Log Customer Up</h2>
+    <div class="mf"><label>SP Name</label><select id="up-sp"></select></div>
+    <div class="mf"><label>Customer Name</label><input id="up-cust" placeholder="First name + Last initial"></div>
+    <div class="mf"><label>Source</label>
+      <select id="up-source">
+        <option>Walk-In</option><option>Appointment</option><option>Be-Back</option>
+        <option>Internet Lead</option><option>Phone Up</option><option>Service</option><option>Referral</option>
+      </select>
+    </div>
+    <div class="mf"><label>Vehicle Interest</label><input id="up-vehicle" placeholder="e.g. 2024 Tundra TRD Pro"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="document.getElementById('up-modal').style.display='none'">Cancel</button>
+      <button class="btn-save" onclick="saveUp()">Log Up</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, doc, setDoc, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const app=initializeApp({apiKey:"AIzaSyDdd6AGUGEdDsvtVB49kfYEyHaVJ5GwIhI",authDomain:"express-sales-system.firebaseapp.com",projectId:"express-sales-system",storageBucket:"express-sales-system.firebasestorage.app",messagingSenderId:"19982387786",appId:"1:19982387786:web:2171af2fa7597f3c1bb4b3"});
+const db=getFirestore(app);
+window.__db=db;window.__addDoc=addDoc;window.__doc=doc;window.__setDoc=setDoc;window.__collection=collection;window.__onSnapshot=onSnapshot;window.__getDocs=getDocs;
+
+const TEAMS={
+  A:{off:'Tuesday',fms:{
+    'Aldo':['Razaq Olayioye','Michelle Medina','Abbitoun Mumba'],
+    'Brent':['Rodney Bradley','Idalmy Santiago','Matt Unger','Clayton Paul'],
+    'Sid':['Nick Opie','Joseph Wright','Harrison Murphey','Alex Constantino','Yama Fakory','Ivan Williams'],
+    'Open':['Yaela Dror','Alexis Hernandez','Abraham Arevalo','Mo Elemam','Alex Teague']
+  }},
+  B:{off:'Wednesday',fms:{
+    'Abe':['Isaac De Lima','Lex Woodard','Maricar Randall'],
+    'Khaled':['Hector Cervantes','Camron Galaviz','Simon Samples','JD Fulkerson'],
+    'James':['Duane May','Geremy Suyo','Adeel Aldomour'],
+    'Norm':['Adam Koran','Christian Collins','Emily Merrill','Miguel Cardenas','Ozzy Mamoor']
+  }},
+  C:{off:'Thursday',fms:{
+    'Devin':['Steven Meece','Randell Bailey','Roger Klein','Fabian Martinez'],
+    'Karim':['Hudson Barnes','Kamal Ramadan','Adeel Marchant','KB Kebron Kahsau'],
+    'Kevin':['Bubacarr Sowe','Parker Tallis','Matt Behzadnia','Ruben Silva'],
+    'Matt':['Angelo Perez','Jimmy Le','Mo Shabavek','Teo Massot']
+  }}
+};
+
+const STATUS_LABELS={'available-n':'Available — North','available-s':'Available — South','with-customer':'With Customer','bdc':'BDC / Phone','service':'Service Lane','break':'Break / Lunch','off':'Off Today','':(()=>'Available — North')()};
+const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const todayName=DAYS[new Date().getDay()];
+const workingToday=Object.keys(TEAMS).filter(t=>TEAMS[t].off!==todayName);
+
+let spStatuses={},spUps={},currentSP=null,currentStatus='',teamFilter='all';
+
+// Mark today badges
+workingToday.forEach(t=>{const b=document.getElementById('badge-'+t);if(b)b.style.display='inline';});
+
+function updateDT(){const n=new Date(),days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];let h=n.getHours(),m=n.getMinutes();const ampm=h>=12?'PM':'AM';h=h%12||12;document.getElementById('fm-dt').textContent=days[n.getDay()]+' '+months[n.getMonth()]+' '+n.getDate()+' · '+h+':'+(m<10?'0':'')+m+' '+ampm;}
+updateDT();setInterval(updateDT,30000);
+
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2500);}
+
+function getAllSPs(){
+  const all=[];
+  Object.keys(TEAMS).forEach(team=>{
+    Object.keys(TEAMS[team].fms).forEach(fm=>{
+      TEAMS[team].fms[fm].forEach(sp=>all.push({sp,team,fm}));
+    });
+  });
+  return all;
+}
+
+function renderFloor(){
+  const wrap=document.getElementById('sp-wrap');
+  const all=getAllSPs();
+  let avail=0,cust=0,bdc=0,svc=0,ups=0;
+  all.forEach(({sp})=>{
+    const st=spStatuses[spId(sp)]||'available-n';
+    const u=spUps[spId(sp)]||0;
+    if(st==='available-n'||st==='available-s')avail++;
+    if(st==='with-customer')cust++;
+    if(st==='bdc')bdc++;
+    if(st==='service')svc++;
+    ups+=u;
+  });
+  document.getElementById('st-total').textContent=all.length;
+  document.getElementById('st-avail').textContent=avail;
+  document.getElementById('st-cust').textContent=cust;
+  document.getElementById('st-bdc').textContent=bdc;
+  document.getElementById('st-svc').textContent=svc;
+  document.getElementById('st-ups').textContent=ups;
+
+  let html='';
+  Object.keys(TEAMS).forEach(team=>{
+    if(teamFilter!=='all'&&teamFilter!==team)return;
+    const teamColors={A:'#ef4444',B:'#3b82f6',C:'#22c55e'};
+    Object.keys(TEAMS[team].fms).forEach(fm=>{
+      const sps=TEAMS[team].fms[fm];
+      if(teamFilter==='all'||teamFilter===team){
+        html+=`<div class="fm-section-title" style="color:${teamColors[team]}">FM: ${fm} <span style="color:var(--muted);font-size:14px;">— ${team} Team</span></div><div class="sp-grid">`;
+        sps.forEach(sp=>{
+          const id=spId(sp);
+          const st=spStatuses[id]||'available-n';
+          const u=spUps[id]||0;
+          const fn=sp.split(' ')[0];const li=sp.split(' ').slice(-1)[0][0]+'.';
+          html+=`<div class="sp-card ${st}" onclick="openSPModal('${sp}')">
+            <div class="sp-name">${fn} ${li}</div>
+            <div class="sp-status ${st}">${STATUS_LABELS[st]||'Available'}</div>
+            ${u>0?`<div class="sp-ups">👤 ${u} up${u>1?'s':''} today</div>`:''}
+          </div>`;
+        });
+        html+='</div>';
+      }
+    });
+  });
+  wrap.innerHTML=html||'<div style="text-align:center;padding:40px;color:var(--muted);">No SPs to display</div>';
+}
+
+function spId(sp){return sp.replace(/\s+/g,'-').toLowerCase().replace(/[^a-z0-9-]/g,'');}
+
+window.setTeam=(t)=>{
+  teamFilter=t;
+  document.querySelectorAll('.team-btn').forEach(b=>b.classList.remove('active'));
+  const btn=document.getElementById('tb-'+(t==='all'?'all':t));
+  if(btn)btn.classList.add('active');
+  renderFloor();
+};
+
+window.openSPModal=(sp)=>{
+  currentSP=sp;
+  currentStatus=spStatuses[spId(sp)]||'available-n';
+  const fn=sp.split(' ')[0];const li=sp.split(' ').slice(-1)[0][0]+'.';
+  document.getElementById('sp-modal-name').textContent=fn+' '+li+' — Update Status';
+  document.querySelectorAll('.status-opt').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('sp-modal').style.display='flex';
+};
+window.selStatus=(s)=>{currentStatus=s;document.querySelectorAll('.status-opt').forEach(b=>b.classList.remove('sel'));event.target.classList.add('sel');};
+window.saveStatus=async()=>{
+  if(!currentSP)return;
+  const id=spId(currentSP);
+  try{
+    await window.__setDoc(window.__doc(window.__db,'fm_status',id),{sp:currentSP,status:currentStatus,updated:Date.now()});
+    document.getElementById('sp-modal').style.display='none';
+    toast('Status updated');
+  }catch(e){alert('Error: '+e.message);}
+};
+
+window.openUpModal=()=>{
+  const all=getAllSPs();
+  document.getElementById('up-sp').innerHTML=all.map(({sp})=>`<option>${sp}</option>`).join('');
+  document.getElementById('up-modal').style.display='flex';
+};
+window.saveUp=async()=>{
+  const sp=document.getElementById('up-sp').value;
+  const cust=document.getElementById('up-cust').value.trim();
+  if(!cust){alert('Enter customer name');return;}
+  try{
+    await window.__addDoc(window.__collection(window.__db,'floor_ups'),{sp,customer:cust,source:document.getElementById('up-source').value,vehicle:document.getElementById('up-vehicle').value.trim(),date:new Date().toISOString().split('T')[0],timestamp:Date.now()});
+    document.getElementById('up-modal').style.display='none';
+    toast('Up logged — '+sp.split(' ')[0]);
+  }catch(e){alert('Error: '+e.message);}
+};
+
+// Listen to status updates
+window.__onSnapshot(window.__collection(window.__db,'fm_status'),snap=>{
+  spStatuses={};snap.forEach(d=>{const v=d.data();spStatuses[d.id]=v.status||'available-n';});
+  renderFloor();
+});
+
+// Listen to ups
+window.__onSnapshot(window.__collection(window.__db,'floor_ups'),snap=>{
+  spUps={};
+  const today=new Date().toISOString().split('T')[0];
+  snap.forEach(d=>{const v=d.data();if(v.date===today){const id=spId(v.sp);spUps[id]=(spUps[id]||0)+1;}});
+  renderFloor();
+});
+
+renderFloor();
+</script>
+
+<script>
+function toggleNav(){document.getElementById('ess-drawer').classList.toggle('open');}
+document.querySelectorAll('#ess-drawer a').forEach(a=>a.addEventListener('click',()=>document.getElementById('ess-drawer').classList.remove('open')));
+</script>
+</body>
+</html>
