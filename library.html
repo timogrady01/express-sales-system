@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESS — Document Library</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0c10;--surface:#12151d;--surface2:#1a1e28;--border:#3d4460;
+    --card-bg:#181c28;--accent:#e8a020;--accent2:#f0c060;--green:#22c55e;
+    --yellow:#f59e0b;--red:#ef4444;--blue:#3b82f6;--text:#eceef5;--muted:#7a859a;--radius:10px;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;min-height:100vh;padding-bottom:60px;padding-top:64px;}
+
+  #ess-nav{position:fixed;top:0;left:0;right:0;width:100%;background:#0d0f14;border-bottom:3px solid #e8a020;display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:999999;font-family:'Barlow Condensed',sans-serif;height:64px;}
+  #ess-nav .nav-logo{font-size:32px;font-weight:900;color:#e8a020;text-decoration:none;letter-spacing:3px;text-transform:uppercase;flex-shrink:0;}
+  #ess-nav .nav-links{display:flex;gap:6px;align-items:center;margin-left:auto;}
+  #ess-nav .nav-links a{font-size:15px;color:#dde3ee;text-decoration:none;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;text-transform:uppercase;padding:6px 12px;border-radius:6px;border:2px solid transparent;white-space:nowrap;transition:all .2s;}
+  #ess-nav .nav-links a:hover{color:#e8a020;border-color:#e8a020;}
+  #ess-nav .nav-links a.nt{color:#22c55e;border-color:#22c55e;}
+  #ess-nav .nav-links a.mt{color:#ef4444;border-color:#ef4444;}
+  #ess-nav .nav-div{width:2px;height:24px;background:#3d4460;flex-shrink:0;margin:0 4px;}
+  #ess-nav-toggle{display:none;background:none;border:2px solid #3d4460;border-radius:6px;color:#e8a020;font-size:22px;padding:4px 10px;cursor:pointer;margin-left:10px;flex-shrink:0;}
+  #ess-drawer{display:none;position:fixed;top:64px;left:0;right:0;background:#0d0f14;border-bottom:3px solid #e8a020;z-index:999998;padding:10px 14px 14px;flex-direction:column;gap:6px;max-height:calc(100vh - 64px);overflow-y:auto;}
+  #ess-drawer.open{display:flex;}
+  #ess-drawer a{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#dde3ee;text-decoration:none;padding:12px 14px;border-radius:7px;border:2px solid #2a2f3d;transition:all .2s;}
+  #ess-drawer a:hover{color:#e8a020;border-color:#e8a020;}
+  #ess-drawer a.nt{color:#22c55e;border-color:#22c55e;}
+  #ess-drawer a.mt{color:#ef4444;border-color:#ef4444;}
+  #ess-drawer .dsec{font-size:11px;color:#3d4460;text-transform:uppercase;letter-spacing:2px;padding:8px 4px 2px;font-family:'Barlow Condensed',sans-serif;font-weight:700;}
+  @media(max-width:900px){#ess-nav .nav-links{display:none!important;}#ess-nav-toggle{display:block;}}
+
+  /* GATE */
+  .gate-bg{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:99998;padding:16px;}
+  .gate-box{background:var(--card-bg);border:2px solid var(--border);border-radius:16px;padding:40px 32px;text-align:center;width:100%;max-width:380px;}
+  .gate-logo{font-family:'Barlow Condensed',sans-serif;font-size:42px;font-weight:900;color:var(--accent);letter-spacing:4px;margin-bottom:4px;}
+  .gate-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:#dde3ee;text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;}
+  .gate-sub{font-size:14px;color:var(--muted);margin-bottom:28px;}
+  .gate-choice{display:flex;flex-direction:column;gap:12px;margin-bottom:20px;}
+  .gcbtn{padding:16px;border-radius:10px;border:2px solid var(--border);background:transparent;color:#dde3ee;font-size:18px;font-weight:700;cursor:pointer;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:1px;transition:all .2s;}
+  .gcbtn:hover{border-color:var(--accent);color:var(--accent);}
+  .gcbtn.tech{border-color:var(--red);color:var(--red);}
+  .gcbtn.tech:hover{background:rgba(239,68,68,.1);}
+  .gate-pin{display:none;flex-direction:column;gap:12px;align-items:center;}
+  .gate-pin input{width:100%;padding:16px;text-align:center;letter-spacing:10px;font-size:28px;border:2px solid var(--border);border-radius:10px;background:var(--surface2);color:#ffffff;font-family:'Barlow',sans-serif;outline:none;}
+  .gate-pin input:focus{border-color:var(--accent);}
+  .gate-pin button{width:100%;padding:14px;background:var(--accent);color:#000;border:none;border-radius:8px;font-size:18px;font-weight:700;cursor:pointer;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:1px;}
+  .gate-back{background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;margin-top:4px;font-family:'Barlow',sans-serif;}
+  .gate-err{color:var(--red);font-size:14px;font-weight:700;font-family:'Barlow Condensed',sans-serif;}
+
+  /* LIBRARY CONTENT */
+  #lib-content{display:none;}
+  .lib-header{background:linear-gradient(135deg,#1a1000,#0d0f14);border-bottom:3px solid var(--accent);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  .lib-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:32px;color:var(--accent);text-transform:uppercase;letter-spacing:3px;}
+  .lib-sub{font-size:14px;color:#dde3ee;margin-top:2px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;}
+  .lib-header-right{display:flex;gap:10px;align-items:center;}
+  .mgr-btn{padding:8px 18px;border-radius:8px;border:2px solid var(--border);background:transparent;color:#dde3ee;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;cursor:pointer;text-transform:uppercase;letter-spacing:1px;transition:all .2s;}
+  .mgr-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .mgr-btn.active{background:var(--accent);color:#000;border-color:var(--accent);}
+
+  /* MANAGER TOOLBAR */
+  .mgr-toolbar{display:none;background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;align-items:center;gap:12px;flex-wrap:wrap;}
+  .mgr-toolbar.show{display:flex;}
+  .add-btn{padding:8px 18px;border-radius:8px;border:2px solid var(--green);background:transparent;color:var(--green);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;cursor:pointer;text-transform:uppercase;letter-spacing:1px;transition:all .2s;}
+  .add-btn:hover{background:rgba(34,197,94,.1);}
+  .lock-btn{padding:8px 18px;border-radius:8px;border:2px solid var(--border);background:transparent;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;cursor:pointer;text-transform:uppercase;transition:all .2s;}
+  .lock-btn:hover{border-color:var(--red);color:var(--red);}
+
+  /* FILTERS */
+  .filter-row{padding:14px 24px;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--border);}
+  .filter-btn{padding:7px 18px;border-radius:20px;border:2px solid var(--border);background:transparent;color:#dde3ee;cursor:pointer;font-size:14px;font-weight:700;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.5px;transition:all .2s;}
+  .filter-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .filter-btn.active{background:var(--accent);color:#000;border-color:var(--accent);}
+
+  /* DOCS GRID */
+  .docs-wrap{padding:20px 24px;}
+  .doc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+  .doc-card{background:var(--card-bg);border:2px solid var(--border);border-radius:var(--radius);padding:18px;display:flex;flex-direction:column;gap:10px;transition:all .2s;}
+  .doc-card:hover{border-color:var(--accent);}
+  .doc-top{display:flex;align-items:flex-start;gap:12px;}
+  .doc-icon{width:44px;height:44px;background:var(--surface2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;}
+  .doc-info{flex:1;}
+  .doc-name{font-size:16px;font-weight:700;color:#ffffff;line-height:1.3;}
+  .doc-desc{font-size:13px;color:#dde3ee;margin-top:4px;line-height:1.5;}
+  .doc-meta{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;}
+  .doc-cat{font-size:12px;padding:3px 10px;border-radius:10px;font-weight:700;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.5px;}
+  .cat-forms{background:rgba(59,130,246,.2);color:#3b82f6;border:1px solid #3b82f6;}
+  .cat-training{background:rgba(34,197,94,.2);color:#22c55e;border:1px solid #22c55e;}
+  .cat-process{background:rgba(245,158,11,.2);color:#f59e0b;border:1px solid #f59e0b;}
+  .cat-policies{background:rgba(239,68,68,.2);color:#ef4444;border:1px solid #ef4444;}
+  .cat-announcements{background:rgba(139,92,246,.2);color:#8b5cf6;border:1px solid #8b5cf6;}
+  .cat-tech{background:rgba(232,160,32,.2);color:#e8a020;border:1px solid #e8a020;}
+  .doc-date{font-size:12px;color:var(--muted);}
+  .dl-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--accent);color:#000;border:none;padding:10px 16px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:700;text-decoration:none;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.5px;transition:all .2s;}
+  .dl-btn:hover{background:var(--accent2);}
+  .del-btn{padding:6px 14px;border-radius:7px;border:2px solid var(--red);background:transparent;color:var(--red);cursor:pointer;font-size:13px;font-weight:700;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;transition:all .2s;}
+  .del-btn:hover{background:rgba(239,68,68,.1);}
+
+  /* TECH CARDS */
+  .tech-card{background:var(--card-bg);border:2px solid var(--border);border-radius:var(--radius);margin-bottom:14px;overflow:hidden;transition:border-color .2s;}
+  .tech-card:hover{border-color:var(--accent);}
+  .tech-head{background:var(--surface);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  .tech-name{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:18px;color:#ffffff;letter-spacing:.5px;}
+  .tech-status{font-size:11px;padding:3px 10px;border-radius:10px;font-weight:700;text-transform:uppercase;font-family:'Barlow Condensed',sans-serif;}
+  .status-live{background:rgba(34,197,94,.2);color:#22c55e;border:1px solid #22c55e;}
+  .status-staging{background:rgba(245,158,11,.2);color:#f59e0b;border:1px solid #f59e0b;}
+  .status-archived{background:rgba(239,68,68,.2);color:#ef4444;border:1px solid #ef4444;}
+  .tech-body{padding:14px 18px;}
+  .tech-meta-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:12px;}
+  .tech-meta-item{background:var(--surface2);border-radius:6px;padding:8px 10px;}
+  .tech-meta-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;font-family:'Barlow Condensed',sans-serif;font-weight:700;}
+  .tech-meta-val{font-size:13px;font-weight:700;color:#dde3ee;}
+  .tech-desc{font-size:13px;color:#dde3ee;line-height:1.6;margin-bottom:10px;padding:10px 12px;background:var(--surface2);border-radius:8px;border-left:3px solid var(--blue);}
+  .tech-changelog{background:rgba(232,160,32,.08);border-radius:8px;padding:10px 12px;margin-bottom:10px;border-left:3px solid var(--accent);}
+  .tech-changelog-title{font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-family:'Barlow Condensed',sans-serif;}
+  .tech-changelog-body{font-size:12px;color:#dde3ee;line-height:1.6;}
+  .tech-notes{background:rgba(34,197,94,.08);border-radius:8px;padding:10px 12px;margin-bottom:10px;border-left:3px solid var(--green);}
+  .tech-notes-title{font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-family:'Barlow Condensed',sans-serif;}
+  .tech-notes-body{font-size:12px;color:#dde3ee;line-height:1.6;}
+  .tech-footer{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 18px;background:var(--surface);border-top:1px solid var(--border);}
+  .view-btn{padding:7px 16px;border-radius:7px;border:2px solid var(--border);background:transparent;color:#dde3ee;cursor:pointer;font-size:13px;font-weight:700;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;transition:all .2s;}
+  .view-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .copy-btn{padding:7px 16px;border-radius:7px;border:none;background:var(--green);color:#000;cursor:pointer;font-size:13px;font-weight:700;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;transition:all .2s;}
+  .copy-btn:hover{background:#16a34a;}
+  .script-box{display:none;background:#0d0f14;padding:14px 18px;border-top:1px solid var(--border);position:relative;}
+  .script-box pre{color:#22c55e;font-size:11px;white-space:pre-wrap;word-break:break-all;max-height:240px;overflow-y:auto;font-family:monospace;line-height:1.5;}
+  .scopy-btn{position:absolute;top:10px;right:14px;background:var(--green);color:#000;border:none;border-radius:6px;padding:4px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;}
+
+  /* MODAL */
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:99999;padding:16px;}
+  .modal{background:var(--card-bg);border:2px solid var(--border);border-radius:var(--radius);padding:24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;}
+  .modal h2{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:var(--accent);margin-bottom:16px;text-transform:uppercase;letter-spacing:1px;}
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:11px;color:#dde3ee;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-family:'Barlow Condensed',sans-serif;font-weight:700;}
+  .field input,.field select,.field textarea{width:100%;background:var(--surface2);border:2px solid var(--border);border-radius:7px;color:#ffffff;padding:10px 12px;font-size:14px;font-family:'Barlow',sans-serif;outline:none;transition:border-color .2s;}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);}
+  .field textarea{resize:vertical;min-height:80px;}
+  .field textarea.code-area{min-height:120px;font-family:monospace;font-size:12px;}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;}
+  .btn-cancel{padding:9px 20px;border-radius:8px;border:2px solid var(--border);background:transparent;color:#dde3ee;cursor:pointer;font-size:14px;font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;}
+  .btn-save{padding:9px 20px;border-radius:8px;border:none;background:var(--accent);color:#000;cursor:pointer;font-size:14px;font-weight:700;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;}
+
+  .empty-state{text-align:center;padding:60px;color:var(--muted);font-size:18px;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:2px;}
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:2px solid var(--accent);color:var(--accent);padding:12px 22px;border-radius:8px;font-size:16px;font-weight:700;z-index:999999;display:none;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:1px;}
+</style>
+</head>
+<body>
+
+<nav id="ess-nav">
+  <a class="nav-logo" href="/">ESS</a>
+  <div class="nav-links">
+    <a href="/big-board.html">Big Board</a>
+    <a href="/fm-floor.html">FM</a>
+    <a href="/greeter.html">Greeter</a>
+    <a href="/library.html">Library</a>
+    <a href="/staff.html">Staff</a>
+    <div class="nav-div"></div>
+    <a href="/cve.html" class="nt">CVE</a>
+    <a href="/pp-scripts.html" class="nt">PP Scripts</a>
+    <a href="/desk-handoff.html" class="nt">Handoff</a>
+    <a href="/sp-training.html" class="nt">Training</a>
+    <div class="nav-div"></div>
+    <a href="/ucm-dashboard.html" class="mt">UCM</a>
+  </div>
+  <button id="ess-nav-toggle" onclick="toggleNav()">☰</button>
+</nav>
+
+<div id="ess-drawer">
+  <div class="dsec">— Core Tools —</div>
+  <a href="/big-board.html">🏆 Big Board</a>
+  <a href="/fm-floor.html">📋 FM Floor</a>
+  <a href="/greeter.html">👋 Greeter Station</a>
+  <a href="/library.html">📚 Library</a>
+  <a href="/staff.html">👤 Staff</a>
+  <div class="dsec">— CVE & PP Tools —</div>
+  <a href="/cve.html" class="nt">🚗 Customer Vehicle Eval</a>
+  <a href="/pp-scripts.html" class="nt">🪝 PP Scripts</a>
+  <a href="/desk-handoff.html" class="nt">📤 Desk Handoff</a>
+  <a href="/sp-training.html" class="nt">📌 SP Training Card</a>
+  <div class="dsec">— Manager —</div>
+  <a href="/ucm-dashboard.html" class="mt">🔐 UCM Dashboard</a>
+</div>
+
+<!-- GATE -->
+<div class="gate-bg" id="gate-bg">
+  <div class="gate-box">
+    <div class="gate-logo">ESS</div>
+    <div class="gate-title">Document Library</div>
+    <div class="gate-sub">Pat Lobb Toyota McKinney</div>
+    <div class="gate-choice" id="gate-choice">
+      <button class="gcbtn" onclick="showPin('staff')">📄 Staff Documents</button>
+      <button class="gcbtn tech" onclick="showPin('tech')">⚙️ Tech / Scripts</button>
+    </div>
+    <div class="gate-pin" id="gate-pin">
+      <input type="password" id="gate-inp" maxlength="6" placeholder="Enter PIN" onkeydown="if(event.key==='Enter')checkGate()">
+      <button onclick="checkGate()">Enter ›</button>
+      <button class="gate-back" onclick="backToChoice()">‹ Back</button>
+      <div class="gate-err" id="gate-err"></div>
+    </div>
+  </div>
+</div>
+
+<!-- LIBRARY CONTENT -->
+<div id="lib-content">
+  <div class="lib-header">
+    <div>
+      <div class="lib-title" id="lib-title">Document Library</div>
+      <div class="lib-sub" id="lib-sub">Pat Lobb Toyota McKinney</div>
+    </div>
+    <div class="lib-header-right">
+      <button class="mgr-btn" id="mgr-btn" onclick="openMgrPin()">Manager Login</button>
+    </div>
+  </div>
+
+  <div class="mgr-toolbar" id="mgr-toolbar">
+    <span style="font-size:14px;color:var(--green);font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;">✅ Manager Mode Active</span>
+    <button class="add-btn" onclick="openAdd()">+ Add Entry</button>
+    <button class="lock-btn" onclick="lockMgr()">🔒 Lock</button>
+  </div>
+
+  <div class="filter-row" id="filter-row"></div>
+  <div class="docs-wrap" id="docs-wrap"><div class="empty-state">Loading...</div></div>
+</div>
+
+<!-- MANAGER PIN MODAL -->
+<div id="mgr-pin-modal" class="modal-bg" style="display:none;">
+  <div class="modal" style="max-width:340px;">
+    <h2>Manager Login</h2>
+    <div class="field"><input type="password" id="mgr-pin-inp" placeholder="Enter PIN" onkeydown="if(event.key==='Enter')checkMgrPin()"></div>
+    <div style="color:var(--red);font-size:13px;font-weight:700;" id="mgr-pin-err"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="document.getElementById('mgr-pin-modal').style.display='none'">Cancel</button>
+      <button class="btn-save" onclick="checkMgrPin()">Enter</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD STAFF DOC MODAL -->
+<div id="add-staff-modal" class="modal-bg" style="display:none;">
+  <div class="modal">
+    <h2>Add Staff Document</h2>
+    <div class="field"><label>Document Name</label><input id="f-name" placeholder="e.g. Sales Process Guide"></div>
+    <div class="field"><label>Description</label><textarea id="f-desc" placeholder="What this document covers..."></textarea></div>
+    <div class="field"><label>Category</label>
+      <select id="f-cat">
+        <option value="Forms">Forms</option>
+        <option value="Training">Training</option>
+        <option value="Process & Procedure">Process & Procedure</option>
+        <option value="Policies">Policies</option>
+        <option value="Announcements">Announcements</option>
+      </select>
+    </div>
+    <div class="field"><label>PDF / File URL</label><input id="f-url" placeholder="https://..."></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="document.getElementById('add-staff-modal').style.display='none'">Cancel</button>
+      <button class="btn-save" onclick="saveStaffDoc()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD TECH SCRIPT MODAL -->
+<div id="add-tech-modal" class="modal-bg" style="display:none;">
+  <div class="modal">
+    <h2>Add Tech Script</h2>
+    <div class="field-row">
+      <div class="field"><label>Script Name</label><input id="t-name" placeholder="e.g. Big Board — Main Script"></div>
+      <div class="field"><label>Version</label><input id="t-ver" placeholder="v1.0"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Status</label>
+        <select id="t-status"><option value="Live">Live</option><option value="Staging">Staging</option><option value="Archived">Archived</option></select>
+      </div>
+      <div class="field"><label>Snippet # / Location</label><input id="t-snippet" placeholder="e.g. 269"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Page / URL</label><input id="t-page" placeholder="/big-board.html"></div>
+      <div class="field"><label>Author</label><input id="t-author" placeholder="Tim / Claude" value="Tim / Claude"></div>
+    </div>
+    <div class="field"><label>Category</label>
+      <select id="t-cat">
+        <option value="Big Board">Big Board</option>
+        <option value="CVE Tool">CVE Tool</option>
+        <option value="EOD Entry">EOD Entry</option>
+        <option value="Library">Library</option>
+        <option value="CSS">CSS</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div class="field"><label>Description</label><textarea id="t-desc" placeholder="What this script does..."></textarea></div>
+    <div class="field"><label>Dependencies</label><input id="t-deps" placeholder="Firebase, CarWars CSV" value="Firebase"></div>
+    <div class="field"><label>Changelog</label><textarea id="t-changelog" placeholder="What changed in this version..."></textarea></div>
+    <div class="field"><label>Notes / Known Issues</label><textarea id="t-notes" placeholder="Any known issues or next steps..."></textarea></div>
+    <div class="field"><label>Full Script Code</label><textarea id="t-script" class="code-area" placeholder="Paste complete script here..."></textarea></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="document.getElementById('add-tech-modal').style.display='none'">Cancel</button>
+      <button class="btn-save" onclick="saveTechScript()">Save Script</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const app=initializeApp({apiKey:"AIzaSyDdd6AGUGEdDsvtVB49kfYEyHaVJ5GwIhI",authDomain:"express-sales-system.firebaseapp.com",projectId:"express-sales-system",storageBucket:"express-sales-system.firebasestorage.app",messagingSenderId:"19982387786",appId:"1:19982387786:web:2171af2fa7597f3c1bb4b3"});
+const db=getFirestore(app);
+window.__db=db;window.__addDoc=addDoc;window.__getDocs=getDocs;window.__collection=collection;window.__doc=doc;window.__deleteDoc=deleteDoc;window.__onSnapshot=onSnapshot;
+
+let mode='staff',isMgr=false,filter='All',staffDocs=[],techDocs=[];
+const STAFF_CATS=['All','Forms','Training','Process & Procedure','Policies','Announcements'];
+const TECH_CATS=['All','Big Board','CVE Tool','EOD Entry','Library','CSS','Other'];
+const CAT_CLASS={'Forms':'cat-forms','Training':'cat-training','Process & Procedure':'cat-process','Policies':'cat-policies','Announcements':'cat-announcements','Tech / Scripts':'cat-tech','Big Board':'cat-tech','CVE Tool':'cat-tech','EOD Entry':'cat-tech','Library':'cat-tech','CSS':'cat-tech','Other':'cat-tech'};
+const CAT_ICON={'Forms':'📋','Training':'🎓','Process & Procedure':'📌','Policies':'📜','Announcements':'📢','Big Board':'🏆','CVE Tool':'🚗','EOD Entry':'📊','Library':'📚','CSS':'🎨','Other':'⚙️'};
+
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',3000);}
+function nowStr(){const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];const n=new Date();return mo[n.getMonth()]+' '+n.getDate()+', '+n.getFullYear();}
+
+window.showPin=(m)=>{mode=m;document.getElementById('gate-choice').style.display='none';document.getElementById('gate-pin').style.display='flex';document.getElementById('gate-inp').value='';document.getElementById('gate-err').textContent='';setTimeout(()=>document.getElementById('gate-inp').focus(),100);};
+window.backToChoice=()=>{document.getElementById('gate-choice').style.display='flex';document.getElementById('gate-pin').style.display='none';};
+window.checkGate=()=>{
+  const pin=document.getElementById('gate-inp').value;
+  const ok=(mode==='staff'&&pin==='3350')||(mode==='tech'&&pin==='1027');
+  if(ok){
+    document.getElementById('gate-bg').style.display='none';
+    document.getElementById('lib-content').style.display='block';
+    document.getElementById('lib-title').textContent=mode==='tech'?'Tech / Scripts':'Staff Documents';
+    document.getElementById('lib-sub').textContent=mode==='tech'?'ESS Platform Scripts & Archive':'Pat Lobb Toyota McKinney';
+    filter='All';renderFilters();loadDocs();
+  } else {document.getElementById('gate-err').textContent='Incorrect PIN — try again';}
+};
+
+function renderFilters(){
+  const cats=mode==='tech'?TECH_CATS:STAFF_CATS;
+  document.getElementById('filter-row').innerHTML=cats.map(c=>`<button class="filter-btn${c===filter?' active':''}" onclick="setFilter('${c}')">${c}</button>`).join('');
+}
+window.setFilter=(c)=>{filter=c;renderFilters();renderDocs();};
+
+function loadDocs(){
+  const ref=window.__collection(window.__db,mode==='tech'?'library/tech_scripts/items':'library/documents');
+  window.__onSnapshot(ref,snap=>{
+    if(mode==='tech'){techDocs=[];snap.forEach(d=>techDocs.unshift({id:d.id,...d.data()}));}
+    else{staffDocs=[];snap.forEach(d=>staffDocs.unshift({id:d.id,...d.data()}));}
+    renderDocs();
+  });
+}
+
+function renderDocs(){
+  const wrap=document.getElementById('docs-wrap');
+  if(mode==='staff'){
+    const list=filter==='All'?staffDocs:staffDocs.filter(d=>d.cat===filter);
+    if(!list.length){wrap.innerHTML='<div class="empty-state">No documents yet</div>';return;}
+    wrap.innerHTML=`<div class="doc-grid">${list.map(d=>`
+      <div class="doc-card">
+        <div class="doc-top">
+          <div class="doc-icon">${CAT_ICON[d.cat]||'📄'}</div>
+          <div class="doc-info">
+            <div class="doc-name">${d.name||''}</div>
+            <div class="doc-desc">${d.desc||''}</div>
+          </div>
+        </div>
+        <div class="doc-meta">
+          <span class="doc-cat ${CAT_CLASS[d.cat]||'cat-forms'}">${d.cat||''}</span>
+          <span class="doc-date">${d.date||''}</span>
+        </div>
+        ${d.url?`<a class="dl-btn" href="${d.url}" target="_blank">📥 Download / View</a>`:''}
+        ${isMgr?`<button class="del-btn" onclick="delDoc('${d.id}','staff')">Delete</button>`:''}
+      </div>`).join('')}</div>`;
+  } else {
+    const list=filter==='All'?techDocs:techDocs.filter(d=>d.cat===filter);
+    if(!list.length){wrap.innerHTML='<div class="empty-state">No scripts yet</div>';return;}
+    wrap.innerHTML=list.map(d=>{
+      const stCls=d.status==='Live'?'status-live':d.status==='Staging'?'status-staging':'status-archived';
+      return`<div class="tech-card">
+        <div class="tech-head">
+          <div><div class="tech-name">${d.name||''}</div><div style="font-size:12px;color:var(--muted);margin-top:2px;font-family:'Barlow Condensed',sans-serif;">${d.cat||''} · ${d.page||''}</div></div>
+          <span class="tech-status ${stCls}">${d.status||'Live'}</span>
+        </div>
+        <div class="tech-body">
+          <div class="tech-meta-grid">
+            <div class="tech-meta-item"><div class="tech-meta-lbl">Version</div><div class="tech-meta-val">${d.version||'—'}</div></div>
+            <div class="tech-meta-item"><div class="tech-meta-lbl">Snippet #</div><div class="tech-meta-val">${d.snippet||'—'}</div></div>
+            <div class="tech-meta-item"><div class="tech-meta-lbl">Author</div><div class="tech-meta-val">${d.author||'—'}</div></div>
+            <div class="tech-meta-item"><div class="tech-meta-lbl">Created</div><div class="tech-meta-val">${d.created||'—'}</div></div>
+          </div>
+          ${d.desc?`<div class="tech-desc">${d.desc}</div>`:''}
+          ${d.changelog?`<div class="tech-changelog"><div class="tech-changelog-title">Changelog</div><div class="tech-changelog-body">${d.changelog}</div></div>`:''}
+          ${d.notes?`<div class="tech-notes"><div class="tech-notes-title">Notes</div><div class="tech-notes-body">${d.notes}</div></div>`:''}
+        </div>
+        <div class="tech-footer">
+          ${d.script?`<button class="view-btn" onclick="toggleScript(this)">View Script</button><button class="copy-btn" onclick="copyScript(this)">Copy Script</button>`:''}
+          ${isMgr?`<button class="del-btn" style="margin-left:auto;" onclick="delDoc('${d.id}','tech')">Delete</button>`:''}
+        </div>
+        ${d.script?`<div class="script-box"><button class="scopy-btn" onclick="copyInline(this)">Copy</button><pre>${d.script.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre></div>`:''}
+      </div>`;
+    }).join('');
+  }
+}
+
+window.toggleScript=(btn)=>{const card=btn.closest('.tech-card');const box=card.querySelector('.script-box');if(!box)return;box.style.display=box.style.display==='block'?'none':'block';btn.textContent=box.style.display==='block'?'Hide Script':'View Script';};
+window.copyScript=(btn)=>{const card=btn.closest('.tech-card');const pre=card.querySelector('pre');if(!pre)return;navigator.clipboard.writeText(pre.textContent).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy Script',2000);});};
+window.copyInline=(btn)=>{const pre=btn.nextElementSibling;navigator.clipboard.writeText(pre.textContent).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',2000);});};
+
+window.openMgrPin=()=>{document.getElementById('mgr-pin-modal').style.display='flex';document.getElementById('mgr-pin-inp').value='';document.getElementById('mgr-pin-err').textContent='';};
+window.checkMgrPin=()=>{const v=document.getElementById('mgr-pin-inp').value;if(v==='1027'||v==='3350'){isMgr=true;document.getElementById('mgr-pin-modal').style.display='none';document.getElementById('mgr-toolbar').classList.add('show');document.getElementById('mgr-btn').textContent='✅ Manager Active';document.getElementById('mgr-btn').classList.add('active');renderDocs();}else{document.getElementById('mgr-pin-err').textContent='Incorrect PIN';}};
+window.lockMgr=()=>{isMgr=false;document.getElementById('mgr-toolbar').classList.remove('show');document.getElementById('mgr-btn').textContent='Manager Login';document.getElementById('mgr-btn').classList.remove('active');renderDocs();};
+
+window.openAdd=()=>{
+  if(mode==='tech'){document.getElementById('add-tech-modal').style.display='flex';}
+  else{document.getElementById('add-staff-modal').style.display='flex';}
+};
+
+window.saveStaffDoc=async()=>{
+  const name=document.getElementById('f-name').value.trim();
+  const url=document.getElementById('f-url').value.trim();
+  if(!name||!url){alert('Name and URL required');return;}
+  try{
+    await window.__addDoc(window.__collection(window.__db,'library/documents'),{name,desc:document.getElementById('f-desc').value.trim(),cat:document.getElementById('f-cat').value,url,date:nowStr(),timestamp:Date.now()});
+    document.getElementById('add-staff-modal').style.display='none';
+    toast('Document added!');
+  }catch(e){alert('Error: '+e.message);}
+};
+
+window.saveTechScript=async()=>{
+  const name=document.getElementById('t-name').value.trim();
+  const script=document.getElementById('t-script').value.trim();
+  if(!name||!script){alert('Name and Script Code required');return;}
+  const ds=nowStr();
+  try{
+    await window.__addDoc(window.__collection(window.__db,'library/tech_scripts/items'),{name,version:document.getElementById('t-ver').value.trim()||'v1.0',status:document.getElementById('t-status').value,snippet:document.getElementById('t-snippet').value.trim(),page:document.getElementById('t-page').value.trim(),author:document.getElementById('t-author').value.trim()||'Tim / Claude',cat:document.getElementById('t-cat').value,desc:document.getElementById('t-desc').value.trim(),deps:document.getElementById('t-deps').value.trim(),changelog:document.getElementById('t-changelog').value.trim(),notes:document.getElementById('t-notes').value.trim(),script,created:ds,modified:ds,timestamp:Date.now()});
+    document.getElementById('add-tech-modal').style.display='none';
+    toast('Script archived!');
+  }catch(e){alert('Error: '+e.message);}
+};
+
+window.delDoc=async(id,type)=>{
+  if(!confirm('Delete this entry?'))return;
+  const path=type==='tech'?'library/tech_scripts/items':'library/documents';
+  try{await window.__deleteDoc(window.__doc(window.__db,path,id));toast('Deleted');}catch(e){alert('Error: '+e.message);}
+};
+</script>
+
+<script>
+function toggleNav(){document.getElementById('ess-drawer').classList.toggle('open');}
+document.querySelectorAll('#ess-drawer a').forEach(a=>a.addEventListener('click',()=>document.getElementById('ess-drawer').classList.remove('open')));
+</script>
+</body>
+</html>
