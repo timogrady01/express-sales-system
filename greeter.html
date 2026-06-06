@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESS — Greeter Station</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0c10;--surface:#12151d;--surface2:#1a1e28;--border:#3d4460;
+    --card-bg:#181c28;--accent:#e8a020;--accent2:#f0c060;--green:#22c55e;
+    --yellow:#f59e0b;--red:#ef4444;--blue:#3b82f6;--text:#eceef5;--muted:#7a859a;--radius:10px;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;min-height:100vh;padding-bottom:60px;padding-top:64px;}
+  #ess-nav{position:fixed;top:0;left:0;right:0;width:100%;background:#0d0f14;border-bottom:3px solid #e8a020;display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:999999;font-family:'Barlow Condensed',sans-serif;height:64px;}
+  #ess-nav .nav-logo{font-size:32px;font-weight:900;color:#e8a020;text-decoration:none;letter-spacing:3px;text-transform:uppercase;flex-shrink:0;}
+  #ess-nav .nav-links{display:flex;gap:6px;align-items:center;margin-left:auto;}
+  #ess-nav .nav-links a{font-size:15px;color:#dde3ee;text-decoration:none;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;text-transform:uppercase;padding:6px 12px;border-radius:6px;border:2px solid transparent;white-space:nowrap;transition:all .2s;}
+  #ess-nav .nav-links a:hover{color:#e8a020;border-color:#e8a020;}
+  #ess-nav .nav-links a.nt{color:#22c55e;border-color:#22c55e;}
+  #ess-nav .nav-links a.mt{color:#ef4444;border-color:#ef4444;}
+  #ess-nav .nav-div{width:2px;height:24px;background:#3d4460;flex-shrink:0;margin:0 4px;}
+  #ess-nav-toggle{display:none;background:none;border:2px solid #3d4460;border-radius:6px;color:#e8a020;font-size:22px;padding:4px 10px;cursor:pointer;margin-left:10px;flex-shrink:0;}
+  #ess-drawer{display:none;position:fixed;top:64px;left:0;right:0;background:#0d0f14;border-bottom:3px solid #e8a020;z-index:999998;padding:10px 14px 14px;flex-direction:column;gap:6px;max-height:calc(100vh - 64px);overflow-y:auto;}
+  #ess-drawer.open{display:flex;}
+  #ess-drawer a{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#dde3ee;text-decoration:none;padding:12px 14px;border-radius:7px;border:2px solid #2a2f3d;transition:all .2s;}
+  #ess-drawer a:hover{color:#e8a020;border-color:#e8a020;}
+  #ess-drawer a.nt{color:#22c55e;border-color:#22c55e;}
+  #ess-drawer a.mt{color:#ef4444;border-color:#ef4444;}
+  #ess-drawer .dsec{font-size:11px;color:#3d4460;text-transform:uppercase;letter-spacing:2px;padding:8px 4px 2px;font-family:'Barlow Condensed',sans-serif;font-weight:700;}
+  @media(max-width:900px){#ess-nav .nav-links{display:none!important;}#ess-nav-toggle{display:block;}}
+
+  .g-header{background:linear-gradient(135deg,#1a1000,#0d0f14);border-bottom:3px solid var(--accent);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  .g-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:32px;color:var(--accent);text-transform:uppercase;letter-spacing:3px;}
+  .g-sub{font-size:14px;color:#dde3ee;margin-top:2px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;}
+  .g-dt{font-size:16px;color:#dde3ee;font-family:'Barlow Condensed',sans-serif;font-weight:600;text-align:right;}
+
+  /* STATS */
+  .stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:14px 20px;background:var(--surface);border-bottom:1px solid var(--border);}
+  .stat-box{background:var(--card-bg);border:2px solid var(--border);border-radius:var(--radius);padding:12px;text-align:center;}
+  .stat-num{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:900;line-height:1;}
+  .stat-lbl{font-size:12px;color:#dde3ee;text-transform:uppercase;letter-spacing:1px;margin-top:4px;font-family:'Barlow Condensed',sans-serif;font-weight:700;}
+
+  /* MAIN LAYOUT */
+  .g-wrap{display:grid;grid-template-columns:1fr 340px;gap:0;min-height:calc(100vh - 200px);}
+  @media(max-width:800px){.g-wrap{grid-template-columns:1fr;}}
+
+  /* CHECK IN FORM */
+  .checkin-panel{padding:20px;border-right:1px solid var(--border);}
+  .panel-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:2px;margin-bottom:16px;}
+  .form-field{margin-bottom:14px;}
+  .form-field label{display:block;font-size:12px;color:#dde3ee;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;font-family:'Barlow Condensed',sans-serif;font-weight:700;}
+  .form-field input,.form-field select{width:100%;background:var(--surface2);border:2px solid var(--border);border-radius:8px;color:#ffffff;padding:12px 14px;font-size:16px;font-family:'Barlow',sans-serif;outline:none;transition:border-color .2s;}
+  .form-field input:focus,.form-field select:focus{border-color:var(--accent);}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .checkin-btn{width:100%;padding:16px;background:var(--accent);color:#000;border:none;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:22px;cursor:pointer;text-transform:uppercase;letter-spacing:2px;transition:all .2s;margin-top:6px;}
+  .checkin-btn:hover{background:var(--accent2);}
+
+  /* VISITOR LOG */
+  .log-panel{padding:20px;background:var(--surface);overflow-y:auto;max-height:calc(100vh - 200px);}
+  .log-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:#dde3ee;text-transform:uppercase;letter-spacing:2px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+  .clear-btn{font-size:12px;color:var(--muted);cursor:pointer;text-decoration:underline;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;}
+  .visitor-card{background:var(--card-bg);border:2px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;transition:all .2s;}
+  .visitor-card.appt{border-color:var(--green);}
+  .visitor-card.walkin{border-color:var(--accent);}
+  .visitor-card.beback{border-color:var(--blue);}
+  .visitor-card.service{border-color:var(--yellow);}
+  .visitor-name{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:#ffffff;}
+  .visitor-sp{font-size:14px;color:var(--accent);margin-top:4px;font-weight:600;}
+  .visitor-meta{font-size:13px;color:#dde3ee;margin-top:4px;}
+  .visitor-time{font-size:11px;color:var(--muted);margin-top:4px;}
+  .visitor-badge{display:inline-block;font-size:11px;padding:3px 10px;border-radius:10px;font-weight:700;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;margin-top:6px;}
+  .badge-appt{background:rgba(34,197,94,.2);color:#22c55e;border:1px solid #22c55e;}
+  .badge-walkin{background:rgba(232,160,32,.2);color:#e8a020;border:1px solid #e8a020;}
+  .badge-beback{background:rgba(59,130,246,.2);color:#3b82f6;border:1px solid #3b82f6;}
+  .badge-service{background:rgba(245,158,11,.2);color:#f59e0b;border:1px solid #f59e0b;}
+  .dismiss-btn{float:right;background:transparent;border:1px solid var(--border);color:var(--muted);padding:3px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;transition:all .2s;}
+  .dismiss-btn:hover{border-color:var(--red);color:var(--red);}
+
+  .empty-log{text-align:center;padding:40px 20px;color:var(--muted);font-size:16px;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:2px;}
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:2px solid var(--green);color:var(--green);padding:12px 22px;border-radius:8px;font-size:16px;font-weight:700;z-index:999999;display:none;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:1px;}
+</style>
+</head>
+<body>
+
+<nav id="ess-nav">
+  <a class="nav-logo" href="/">ESS</a>
+  <div class="nav-links">
+    <a href="/big-board.html">Big Board</a>
+    <a href="/fm-floor.html">FM</a>
+    <a href="/greeter.html">Greeter</a>
+    <a href="/library.html">Library</a>
+    <a href="/staff.html">Staff</a>
+    <div class="nav-div"></div>
+    <a href="/cve.html" class="nt">CVE</a>
+    <a href="/pp-scripts.html" class="nt">PP Scripts</a>
+    <a href="/desk-handoff.html" class="nt">Handoff</a>
+    <a href="/sp-training.html" class="nt">Training</a>
+    <div class="nav-div"></div>
+    <a href="/ucm-dashboard.html" class="mt">UCM</a>
+  </div>
+  <button id="ess-nav-toggle" onclick="toggleNav()">☰</button>
+</nav>
+
+<div id="ess-drawer">
+  <div class="dsec">— Core Tools —</div>
+  <a href="/big-board.html">🏆 Big Board</a>
+  <a href="/fm-floor.html">📋 FM Floor</a>
+  <a href="/greeter.html">👋 Greeter Station</a>
+  <a href="/library.html">📚 Library</a>
+  <a href="/staff.html">👤 Staff</a>
+  <div class="dsec">— CVE & PP Tools —</div>
+  <a href="/cve.html" class="nt">🚗 Customer Vehicle Eval</a>
+  <a href="/pp-scripts.html" class="nt">🪝 PP Scripts</a>
+  <a href="/desk-handoff.html" class="nt">📤 Desk Handoff</a>
+  <a href="/sp-training.html" class="nt">📌 SP Training Card</a>
+  <div class="dsec">— Manager —</div>
+  <a href="/ucm-dashboard.html" class="mt">🔐 UCM Dashboard</a>
+</div>
+
+<div class="g-header">
+  <div>
+    <div class="g-title">👋 Greeter Station</div>
+    <div class="g-sub">Customer Check-In — Pat Lobb Toyota McKinney</div>
+  </div>
+  <div class="g-dt" id="g-dt"></div>
+</div>
+
+<div class="stats-row">
+  <div class="stat-box"><div class="stat-num" id="st-total" style="color:var(--accent)">0</div><div class="stat-lbl">Total Today</div></div>
+  <div class="stat-box"><div class="stat-num" id="st-appt" style="color:var(--green)">0</div><div class="stat-lbl">Appointments</div></div>
+  <div class="stat-box"><div class="stat-num" id="st-walk" style="color:var(--accent)">0</div><div class="stat-lbl">Walk-Ins</div></div>
+  <div class="stat-box"><div class="stat-num" id="st-bb" style="color:var(--blue)">0</div><div class="stat-lbl">Be-Backs</div></div>
+  <div class="stat-box"><div class="stat-num" id="st-svc" style="color:var(--yellow)">0</div><div class="stat-lbl">Service</div></div>
+</div>
+
+<div class="g-wrap">
+  <!-- CHECK IN FORM -->
+  <div class="checkin-panel">
+    <div class="panel-title">Check In Customer</div>
+    <div class="form-field">
+      <label>Customer Name</label>
+      <input type="text" id="ci-name" placeholder="First name + Last initial">
+    </div>
+    <div class="row2">
+      <div class="form-field">
+        <label>Visit Type</label>
+        <select id="ci-type">
+          <option value="appt">📅 Appointment</option>
+          <option value="walkin">🚶 Walk-In</option>
+          <option value="beback">🔄 Be-Back</option>
+          <option value="service">🔧 Service</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Assigned SP</label>
+        <select id="ci-sp"></select>
+      </div>
+    </div>
+    <div class="form-field">
+      <label>Vehicle Interest</label>
+      <input type="text" id="ci-vehicle" placeholder="e.g. 2024 Tundra TRD Pro White">
+    </div>
+    <div class="form-field">
+      <label>Notes</label>
+      <input type="text" id="ci-notes" placeholder="Any notes for the SP...">
+    </div>
+    <button class="checkin-btn" onclick="checkIn()">✅ Check In Customer</button>
+  </div>
+
+  <!-- VISITOR LOG -->
+  <div class="log-panel">
+    <div class="log-title">
+      Today's Visitors
+      <span class="clear-btn" onclick="if(confirm('Clear all?'))clearLog()">Clear</span>
+    </div>
+    <div id="visitor-log"><div class="empty-log">No visitors yet today</div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, onSnapshot, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const app=initializeApp({apiKey:"AIzaSyDdd6AGUGEdDsvtVB49kfYEyHaVJ5GwIhI",authDomain:"express-sales-system.firebaseapp.com",projectId:"express-sales-system",storageBucket:"express-sales-system.firebasestorage.app",messagingSenderId:"19982387786",appId:"1:19982387786:web:2171af2fa7597f3c1bb4b3"});
+const db=getFirestore(app);
+
+const SPS=["Abbitoun Mumba","Abe Cisneros","Abraham Arevalo","Adam Koran","Adeel Aldomour","Adeel Marchant","Aldo Cortes","Alex Constantino","Alex Teague","Alexis Hernandez","Angelo Perez","Brent Williams","Bubacarr Sowe","Camron Galaviz","Chris Conroy","Christian Collins","Clayton Paul","Devin Hawley","Duane May","Emily Merrill","Fabian Martinez","Fazal Imam","Geremy Suyo","Harrison Murphey","Hector Cervantes","Hudson Barnes","Idalmy Santiago","Isaac De Lima","Ivan Williams","James Brown","JD Fulkerson","Jimmy Le","John Ellis","Joseph Wright","Kamal Ramadan","Kamron Espinoza","Karim Jaffer","KB Kebron Kahsau","Kevin Bedford","Khaled Fares","Leo Corrales","Lex Woodard","Maricar Randall","Matt Behzadnia","Matt Jirani","Matt Unger","Michelle Medina","Miguel Cardenas","Mo Elemam","Mo Shabavek","Nick Opie","Norm Nguyen","Ozzy Mamoor","Parker Tallis","Randell Bailey","Razaq Olayioye","Rodney Bradley","Roger Klein","Ruben Silva","Sid Waldrop","Simon Samples","Steven Meece","Teo Massot","Tim Markle","Tim O'Grady","Tommy Lee","Yaela Dror","Yama Fakory"];
+
+document.getElementById('ci-sp').innerHTML=SPS.map(s=>`<option>${s}</option>`).join('');
+
+function toast(msg,col='var(--green)'){const t=document.getElementById('toast');t.textContent=msg;t.style.borderColor=col;t.style.color=col;t.style.display='block';setTimeout(()=>t.style.display='none',3000);}
+
+function updateDT(){const n=new Date(),days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];let h=n.getHours(),m=n.getMinutes();const ampm=h>=12?'PM':'AM';h=h%12||12;document.getElementById('g-dt').textContent=days[n.getDay()]+' '+months[n.getMonth()]+' '+n.getDate()+' · '+h+':'+(m<10?'0':'')+m+' '+ampm;}
+updateDT();setInterval(updateDT,30000);
+
+const today=new Date().toISOString().split('T')[0];
+const visitorsRef=collection(db,'greeter_visits');
+
+window.checkIn=async()=>{
+  const name=document.getElementById('ci-name').value.trim();
+  if(!name){alert('Enter customer name');return;}
+  const type=document.getElementById('ci-type').value;
+  const sp=document.getElementById('ci-sp').value;
+  const vehicle=document.getElementById('ci-vehicle').value.trim();
+  const notes=document.getElementById('ci-notes').value.trim();
+  try{
+    await addDoc(visitorsRef,{name,type,sp,vehicle,notes,date:today,timestamp:Date.now()});
+    document.getElementById('ci-name').value='';
+    document.getElementById('ci-vehicle').value='';
+    document.getElementById('ci-notes').value='';
+    toast('✅ '+name+' checked in — '+sp.split(' ')[0]);
+  }catch(e){alert('Error: '+e.message);}
+};
+
+window.dismissVisitor=async(id)=>{
+  try{await deleteDoc(doc(db,'greeter_visits',id));toast('Dismissed','var(--muted)');}catch(e){}
+};
+
+window.clearLog=async()=>{
+  try{
+    const snap=await getDocs(query(visitorsRef,where('date','==',today)));
+    await Promise.all(snap.docs.map(d=>deleteDoc(doc(db,'greeter_visits',d.id))));
+  }catch(e){}
+};
+
+const TYPE_LABELS={appt:'Appointment',walkin:'Walk-In',beback:'Be-Back',service:'Service'};
+const TYPE_BADGE={appt:'badge-appt',walkin:'badge-walkin',beback:'badge-beback',service:'badge-service'};
+
+onSnapshot(query(visitorsRef,where('date','==',today)),snap=>{
+  const visits=[];snap.forEach(d=>visits.push({id:d.id,...d.data()}));
+  visits.sort((a,b)=>b.timestamp-a.timestamp);
+  let appt=0,walk=0,bb=0,svc=0;
+  visits.forEach(v=>{if(v.type==='appt')appt++;if(v.type==='walkin')walk++;if(v.type==='beback')bb++;if(v.type==='service')svc++;});
+  document.getElementById('st-total').textContent=visits.length;
+  document.getElementById('st-appt').textContent=appt;
+  document.getElementById('st-walk').textContent=walk;
+  document.getElementById('st-bb').textContent=bb;
+  document.getElementById('st-svc').textContent=svc;
+  if(!visits.length){document.getElementById('visitor-log').innerHTML='<div class="empty-log">No visitors yet today</div>';return;}
+  document.getElementById('visitor-log').innerHTML=visits.map(v=>{
+    const t=new Date(v.timestamp);
+    let h=t.getHours(),m=t.getMinutes();const ampm=h>=12?'PM':'AM';h=h%12||12;
+    const timeStr=h+':'+(m<10?'0':'')+m+' '+ampm;
+    return`<div class="visitor-card ${v.type||'walkin'}">
+      <button class="dismiss-btn" onclick="dismissVisitor('${v.id}')">✕ Done</button>
+      <div class="visitor-name">${v.name||'Unknown'}</div>
+      <div class="visitor-sp">SP: ${v.sp||'—'}</div>
+      ${v.vehicle?`<div class="visitor-meta">🚗 ${v.vehicle}</div>`:''}
+      ${v.notes?`<div class="visitor-meta">📝 ${v.notes}</div>`:''}
+      <div class="visitor-time">⏰ Checked in at ${timeStr}</div>
+      <span class="visitor-badge ${TYPE_BADGE[v.type]||'badge-walkin'}">${TYPE_LABELS[v.type]||'Walk-In'}</span>
+    </div>`;
+  }).join('');
+});
+</script>
+
+<script>
+function toggleNav(){document.getElementById('ess-drawer').classList.toggle('open');}
+document.querySelectorAll('#ess-drawer a').forEach(a=>a.addEventListener('click',()=>document.getElementById('ess-drawer').classList.remove('open')));
+</script>
+</body>
+</html>
