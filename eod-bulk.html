@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESS — EOD Bulk Entry</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0c10;--surface:#12151d;--surface2:#1a1e28;--border:#3d4460;
+    --card-bg:#181c28;--accent:#e8a020;--accent2:#f0c060;--green:#22c55e;
+    --yellow:#f59e0b;--red:#ef4444;--blue:#3b82f6;--text:#eceef5;--muted:#7a859a;--radius:10px;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;min-height:100vh;padding-bottom:60px;padding-top:64px;}
+  #ess-nav{position:fixed;top:0;left:0;right:0;width:100%;background:#0d0f14;border-bottom:3px solid #e8a020;display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:999999;font-family:'Barlow Condensed',sans-serif;height:64px;}
+  #ess-nav .nav-logo{font-size:32px;font-weight:900;color:#e8a020;text-decoration:none;letter-spacing:3px;text-transform:uppercase;flex-shrink:0;}
+  #ess-nav .nav-links{display:flex;gap:6px;align-items:center;margin-left:auto;}
+  #ess-nav .nav-links a{font-size:15px;color:#dde3ee;text-decoration:none;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;text-transform:uppercase;padding:6px 12px;border-radius:6px;border:2px solid transparent;white-space:nowrap;transition:all .2s;}
+  #ess-nav .nav-links a:hover{color:#e8a020;border-color:#e8a020;}
+  #ess-nav .nav-links a.nt{color:#22c55e;border-color:#22c55e;}
+  #ess-nav .nav-links a.mt{color:#ef4444;border-color:#ef4444;}
+  #ess-nav .nav-div{width:2px;height:24px;background:#3d4460;flex-shrink:0;margin:0 4px;}
+  #ess-nav-toggle{display:none;background:none;border:2px solid #3d4460;border-radius:6px;color:#e8a020;font-size:22px;padding:4px 10px;cursor:pointer;margin-left:10px;flex-shrink:0;}
+  #ess-drawer{display:none;position:fixed;top:64px;left:0;right:0;background:#0d0f14;border-bottom:3px solid #e8a020;z-index:999998;padding:10px 14px 14px;flex-direction:column;gap:6px;max-height:calc(100vh - 64px);overflow-y:auto;}
+  #ess-drawer.open{display:flex;}
+  #ess-drawer a{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#dde3ee;text-decoration:none;padding:12px 14px;border-radius:7px;border:2px solid #2a2f3d;transition:all .2s;}
+  #ess-drawer a:hover{color:#e8a020;border-color:#e8a020;}
+  #ess-drawer a.nt{color:#22c55e;border-color:#22c55e;}
+  #ess-drawer a.mt{color:#ef4444;border-color:#ef4444;}
+  #ess-drawer .dsec{font-size:11px;color:#3d4460;text-transform:uppercase;letter-spacing:2px;padding:8px 4px 2px;font-family:'Barlow Condensed',sans-serif;font-weight:700;}
+  @media(max-width:900px){#ess-nav .nav-links{display:none!important;}#ess-nav-toggle{display:block;}}
+
+  /* GATE */
+  .gate-bg{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:99998;padding:16px;}
+  .gate-box{background:var(--card-bg);border:2px solid var(--border);border-radius:16px;padding:40px 32px;text-align:center;width:100%;max-width:380px;}
+  .gate-logo{font-family:'Barlow Condensed',sans-serif;font-size:42px;font-weight:900;color:var(--accent);letter-spacing:4px;margin-bottom:4px;}
+  .gate-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:#dde3ee;text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;}
+  .gate-sub{font-size:14px;color:var(--muted);margin-bottom:28px;}
+  .gate-inp{width:100%;padding:16px;text-align:center;letter-spacing:10px;font-size:28px;border:2px solid var(--border);border-radius:10px;background:var(--surface2);color:#ffffff;font-family:'Barlow',sans-serif;outline:none;margin-bottom:12px;}
+  .gate-inp:focus{border-color:var(--accent);}
+  .gate-btn{width:100%;padding:14px;background:var(--accent);color:#000;border:none;border-radius:8px;font-size:18px;font-weight:700;cursor:pointer;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:1px;}
+  .gate-err{color:var(--red);font-size:14px;font-weight:700;margin-top:10px;font-family:'Barlow Condensed',sans-serif;}
+
+  /* HEADER */
+  .eod-header{background:linear-gradient(135deg,#1a1000,#0d0f14);border-bottom:3px solid var(--accent);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+  .eod-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:28px;color:var(--accent);text-transform:uppercase;letter-spacing:3px;}
+  .eod-sub{font-size:13px;color:#dde3ee;margin-top:2px;font-family:'Barlow Condensed',sans-serif;}
+  .eod-dt{font-size:14px;color:#dde3ee;font-family:'Barlow Condensed',sans-serif;font-weight:600;}
+
+  /* SCOREBOARD */
+  .scoreboard{padding:14px 20px;background:var(--surface);border-bottom:1px solid var(--border);}
+  .sb-label{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:#dde3ee;text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;}
+  .sb-teams{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;}
+  .sb-team{background:var(--card-bg);border-radius:var(--radius);padding:14px;border-top:4px solid var(--border);}
+  .sb-team-name{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:#ffffff;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+  .sb-row{display:flex;justify-content:space-between;margin-bottom:5px;font-size:13px;}
+  .sb-lbl{color:var(--muted);}
+  .sb-val{font-weight:700;font-family:'Barlow Condensed',sans-serif;font-size:15px;}
+  .sb-green{color:#22c55e;}
+  .sb-yellow{color:#f59e0b;}
+  .sb-red{color:#ef4444;}
+  .fm-scoreboard{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;}
+  .fm-card{background:var(--card-bg);border-radius:8px;padding:10px 12px;border-left:4px solid var(--border);}
+  .fm-name{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:#ffffff;text-transform:uppercase;margin-bottom:5px;}
+  .fm-row{display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;}
+  .fm-lbl{color:var(--muted);}
+  .fm-val{font-weight:700;font-family:'Barlow Condensed',sans-serif;}
+
+  /* ACTION BAR */
+  .action-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .date-lbl{font-size:13px;color:#dde3ee;font-weight:700;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;}
+  .date-inp{background:var(--surface2);border:2px solid var(--border);border-radius:7px;color:#ffffff;padding:8px 12px;font-size:15px;font-family:'Barlow',sans-serif;outline:none;}
+  .date-inp:focus{border-color:var(--accent);}
+  .upload-btn{padding:8px 16px;border-radius:7px;border:2px solid var(--blue);background:transparent;color:#3b82f6;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;cursor:pointer;text-transform:uppercase;transition:all .2s;}
+  .upload-btn:hover{background:rgba(59,130,246,.1);}
+  .upload-btn.cv{border-color:#e67e00;color:#e67e00;}
+  .upload-btn.cv:hover{background:rgba(230,126,0,.1);}
+  .save-btn{padding:9px 24px;border-radius:7px;border:none;background:var(--red);color:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;cursor:pointer;text-transform:uppercase;letter-spacing:1px;margin-left:auto;transition:all .2s;}
+  .save-btn:hover{background:#c5081a;}
+  .csv-ok{font-size:12px;color:#22c55e;font-weight:700;font-family:'Barlow Condensed',sans-serif;}
+  .cv-ok{font-size:12px;color:#e67e00;font-weight:700;font-family:'Barlow Condensed',sans-serif;}
+
+  /* FILTER BAR */
+  .filter-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .filter-lbl{font-size:12px;color:#dde3ee;font-weight:700;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:1px;}
+  .ftbtn{padding:6px 16px;border-radius:20px;border:2px solid var(--border);background:transparent;color:#dde3ee;cursor:pointer;font-size:13px;font-weight:700;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;transition:all .2s;}
+  .ftbtn:hover{border-color:var(--accent);color:var(--accent);}
+  .ftbtn.active{background:#1e2d3d;color:#ffffff;border-color:#1e2d3d;}
+  .ftbtn.team-a.active{background:#ef4444;border-color:#ef4444;}
+  .ftbtn.team-b.active{background:#3b82f6;border-color:#3b82f6;}
+  .ftbtn.team-c.active{background:#22c55e;border-color:#22c55e;color:#000;}
+  .today-badge{font-size:10px;background:#22c55e;color:#000;padding:1px 6px;border-radius:8px;font-weight:700;margin-left:3px;font-family:'Barlow Condensed',sans-serif;}
+  .team-hdr{padding:8px 20px;margin:0;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#ffffff;display:none;font-family:'Barlow Condensed',sans-serif;}
+  .team-hdr.show{display:block;}
+  .team-hdr.a{background:#ef4444;}
+  .team-hdr.b{background:#3b82f6;}
+  .team-hdr.c{background:#22c55e;color:#000;}
+
+  /* TABLE */
+  .tbl-wrap{overflow-x:auto;margin:0;}
+  table{width:100%;border-collapse:collapse;font-size:13px;min-width:1100px;}
+  thead tr:first-child th{background:#1e2d3d;color:#eceef5;padding:10px 6px;font-size:11px;font-weight:700;text-transform:uppercase;text-align:center;letter-spacing:1px;white-space:nowrap;}
+  thead tr:first-child th:first-child{text-align:left;padding-left:16px;}
+  thead tr:first-child th.cw{background:#2e6da4;}
+  thead tr:first-child th.cv{background:#e67e00;}
+  thead tr:first-child th.ds{background:#28a745;}
+  thead tr:first-child th.gr{background:#6f42c1;}
+  thead tr:first-child th.tr{background:#0e7490;}
+  thead tr:last-child th{background:#2a3a4d;color:#dde3ee;padding:7px 5px;font-size:10px;font-weight:700;text-transform:uppercase;text-align:center;white-space:nowrap;}
+  thead tr:last-child th:first-child{text-align:left;padding-left:16px;}
+  td{padding:6px 4px;text-align:center;border-bottom:1px solid var(--border);}
+  td:first-child{text-align:left;padding-left:16px;font-size:14px;font-weight:700;color:#ffffff;white-space:nowrap;background:var(--surface);border-right:2px solid var(--border);min-width:160px;}
+  td input{width:52px;padding:5px 4px;border:1px solid var(--border);border-radius:5px;font-size:13px;font-weight:700;text-align:center;color:#ffffff;background:var(--surface2);font-family:'Barlow',sans-serif;outline:none;}
+  td input:focus{border-color:var(--accent);}
+  td input.cw-f{background:#1a2a3d;border-color:#2e6da4;}
+  td input.cv-f{background:#2a1a00;border-color:#e67e00;}
+  td input.fe-f{background:#1e1a2e;border-color:#6f42c1;width:70px;}
+  td input.be-f{background:#1e1a2e;border-color:#6f42c1;width:70px;}
+  td.track-cell{font-size:13px;font-weight:700;color:#dde3ee;}
+  td.proj-cell{font-size:11px;color:var(--muted);}
+  .u-green{color:#22c55e!important;}
+  .u-yellow{color:#f59e0b!important;}
+  .u-red{color:#ef4444!important;}
+  tr:hover td{background:rgba(255,255,255,.03);}
+  tr:hover td:first-child{background:rgba(255,255,255,.05);}
+  .saved-row td{background:rgba(34,197,94,.05)!important;}
+  .saved-row td:first-child{background:rgba(34,197,94,.1)!important;}
+  .fm-hdr-row td{background:#2a3a4d!important;color:#dde3ee!important;font-size:12px!important;padding:6px 16px!important;border:none!important;font-weight:700!important;letter-spacing:1px!important;text-align:left!important;}
+
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:2px solid var(--accent);color:var(--accent);padding:12px 22px;border-radius:8px;font-size:16px;font-weight:700;z-index:999999;display:none;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:1px;}
+</style>
+</head>
+<body>
+
+<nav id="ess-nav">
+  <a class="nav-logo" href="/">ESS</a>
+  <div class="nav-links">
+    <a href="/big-board.html">Big Board</a>
+    <a href="/fm-floor.html">FM</a>
+    <a href="/greeter.html">Greeter</a>
+    <a href="/library.html">Library</a>
+    <a href="/staff.html">Staff</a>
+    <div class="nav-div"></div>
+    <a href="/cve.html" class="nt">CVE</a>
+    <a href="/pp-scripts.html" class="nt">PP Scripts</a>
+    <a href="/desk-handoff.html" class="nt">Handoff</a>
+    <a href="/sp-training.html" class="nt">Training</a>
+    <div class="nav-div"></div>
+    <a href="/ucm-dashboard.html" class="mt">UCM</a>
+  </div>
+  <button id="ess-nav-toggle" onclick="toggleNav()">☰</button>
+</nav>
+
+<div id="ess-drawer">
+  <div class="dsec">— Core Tools —</div>
+  <a href="/big-board.html">🏆 Big Board</a>
+  <a href="/fm-floor.html">📋 FM Floor</a>
+  <a href="/greeter.html">👋 Greeter Station</a>
+  <a href="/library.html">📚 Library</a>
+  <a href="/staff.html">👤 Staff</a>
+  <div class="dsec">— CVE & PP Tools —</div>
+  <a href="/cve.html" class="nt">🚗 Customer Vehicle Eval</a>
+  <a href="/pp-scripts.html" class="nt">🪝 PP Scripts</a>
+  <a href="/desk-handoff.html" class="nt">📤 Desk Handoff</a>
+  <a href="/sp-training.html" class="nt">📌 SP Training Card</a>
+  <div class="dsec">— Manager —</div>
+  <a href="/ucm-dashboard.html" class="mt">🔐 UCM Dashboard</a>
+</div>
+
+<!-- GATE -->
+<div class="gate-bg" id="gate-bg">
+  <div class="gate-box">
+    <div class="gate-logo">ESS</div>
+    <div class="gate-title">Bulk EOD Entry</div>
+    <div class="gate-sub">Manager access only — PIN required</div>
+    <input type="password" class="gate-inp" id="gate-inp" maxlength="6" placeholder="••••" onkeydown="if(event.key==='Enter')checkGate()">
+    <button class="gate-btn" onclick="checkGate()">Enter ›</button>
+    <div class="gate-err" id="gate-err"></div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="eod-content" style="display:none;">
+
+  <div class="eod-header">
+    <div>
+      <div class="eod-title">Bulk EOD Entry</div>
+      <div class="eod-sub">Pat Lobb Toyota McKinney — Daily Data Entry</div>
+    </div>
+    <div class="eod-dt" id="eod-dt"></div>
+  </div>
+
+  <!-- SCOREBOARD -->
+  <div class="scoreboard">
+    <div class="sb-label">Team Scoreboard — MTD Production</div>
+    <div class="sb-teams" id="sb-teams"></div>
+    <div class="sb-label" style="margin-top:8px;">FM Scoreboard</div>
+    <div class="fm-scoreboard" id="fm-scoreboard"></div>
+  </div>
+
+  <!-- ACTION BAR -->
+  <div class="action-bar">
+    <span class="date-lbl">Date:</span>
+    <input type="date" id="bulk-date" class="date-inp" onchange="loadExistingData()">
+    <input type="file" id="bulk-csv" accept=".csv" style="display:none">
+    <button class="upload-btn" onclick="document.getElementById('bulk-csv').click()">📂 CarWars CSV</button>
+    <span class="csv-ok" id="bulk-csv-ok"></span>
+    <input type="file" id="bulk-cv-csv" accept=".csv" style="display:none">
+    <button class="upload-btn cv" onclick="document.getElementById('bulk-cv-csv').click()">🎬 Covideo CSV</button>
+    <span class="cv-ok" id="bulk-cv-ok"></span>
+    <button class="save-btn" onclick="bulkSaveAll()">💾 Save All</button>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <span class="filter-lbl">View:</span>
+    <button class="ftbtn active" onclick="setView('all')" id="vw-all">All SPs</button>
+    <button class="ftbtn team-a" onclick="setView('A')" id="vw-A">A Team <span id="badge-A" class="today-badge" style="display:none">TODAY</span></button>
+    <button class="ftbtn team-b" onclick="setView('B')" id="vw-B">B Team <span id="badge-B" class="today-badge" style="display:none">TODAY</span></button>
+    <button class="ftbtn team-c" onclick="setView('C')" id="vw-C">C Team <span id="badge-C" class="today-badge" style="display:none">TODAY</span></button>
+    <span style="width:2px;background:var(--border);height:20px;"></span>
+    <span class="filter-lbl">By FM:</span>
+    <button class="ftbtn" onclick="setView('fm-Abe')" id="vw-fm-Abe">Abe</button>
+    <button class="ftbtn" onclick="setView('fm-Devin')" id="vw-fm-Devin">Devin</button>
+    <button class="ftbtn" onclick="setView('fm-Khaled')" id="vw-fm-Khaled">Khaled</button>
+    <button class="ftbtn" onclick="setView('fm-Open')" id="vw-fm-Open">Open</button>
+  </div>
+
+  <div class="team-hdr a" id="team-hdr-A">A Team — Tuesday OFF | GSM: Brent · Managers: Aldo (USED) · Sid (NEW)</div>
+  <div class="team-hdr b" id="team-hdr-B">B Team — Wednesday OFF | FM: Abe · Khaled</div>
+  <div class="team-hdr c" id="team-hdr-C">C Team — Thursday OFF | FM: Devin</div>
+
+  <!-- TABLE -->
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2" style="text-align:left;padding-left:16px;min-width:160px;">SP Name</th>
+          <th colspan="3" class="cw">CarWars</th>
+          <th colspan="1" class="cv">Covideo</th>
+          <th colspan="4" class="ds">Appointments</th>
+          <th colspan="2" class="gr">Gross Today</th>
+          <th colspan="4" class="tr">Tracking MTD</th>
+        </tr>
+        <tr>
+          <th>Tot OB</th><th>Uniq OB</th><th>Live Conv</th>
+          <th>Sent</th>
+          <th>Set</th><th>Conf</th><th>Showed</th><th>Sold</th>
+          <th>FE $</th><th>BE $</th>
+          <th>Units MTD</th><th>Proj EOM</th><th>FE MTD</th><th>BE MTD</th>
+        </tr>
+      </thead>
+      <tbody id="bulk-tbody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<div class="toast" id="bulk-toast"></div>
+
+<script>
+const TEAMS={
+  A:{off:'Tuesday',fms:{
+    'Aldo':['Razaq Olayioye','Michelle Medina','Abbitoun Mumba'],
+    'Brent':['Rodney Bradley','Idalmy Santiago','Matt Unger','Clayton Paul'],
+    'Sid':['Nick Opie','Joseph Wright','Harrison Murphey','Alex Constantino','Yama Fakory','Ivan Williams'],
+    'Open':['Yaela Dror','Alexis Hernandez','Abraham Arevalo','Mo Elemam','Alex Teague']
+  }},
+  B:{off:'Wednesday',fms:{
+    'Abe':['Isaac De Lima','Lex Woodard','Maricar Randall'],
+    'Khaled':['Hector Cervantes','Camron Galaviz','Simon Samples','JD Fulkerson'],
+    'James':['Duane May','Geremy Suyo','Adeel Aldomour'],
+    'Norm':['Adam Koran','Christian Collins','Emily Merrill','Miguel Cardenas','Ozzy Mamoor']
+  }},
+  C:{off:'Thursday',fms:{
+    'Devin':['Steven Meece','Randell Bailey','Roger Klein','Fabian Martinez'],
+    'Karim':['Hudson Barnes','Kamal Ramadan','Adeel Marchant','KB Kebron Kahsau'],
+    'Kevin':['Bubacarr Sowe','Parker Tallis','Matt Behzadnia','Ruben Silva'],
+    'Matt':['Angelo Perez','Jimmy Le','Mo Shabavek','Teo Massot']
+  }}
+};
+
+const BCWMAP={"Abbiton Mumba":"Abbitoun Mumba","Abrahan Arevalo":"Abraham Arevalo","Alexander Constantino":"Alex Constantino","Alexander Teague":"Alex Teague","Hector A. Cervantes":"Hector Cervantes","Idalmy Garcia-Santiago":"Idalmy Santiago","Isaac De Lima Florez":"Isaac De Lima","KB Kahsay":"KB Kebron Kahsau","Lex Woods-Woodard":"Lex Woodard","Mahmoud Elemam":"Mo Elemam","Mohamad Shabarek":"Mo Shabavek","Faz Imam":"Fazal Imam","Norman Nguyen":"Norm Nguyen","Sidney Waldrop":"Sid Waldrop","Timothy O'Grady":"Tim O'Grady","Bubacarr J. Sowe":"Bubacarr Sowe"};
+const CVMAP={"Abrahan Arevalo":"Abraham Arevalo","Randell Bailey":"Randell Bailey","Hudson Barnes":"Hudson Barnes","Kevin Bedford":"Kevin Bedford"};
+
+const DB_URL='https://express-sales-system-default-rtdb.firebaseio.com';
+let allEOD={};
+const today=new Date();
+const dom=today.getDate();
+const dim=new Date(today.getFullYear(),today.getMonth()+1,0).getDate();
+const month=today.toISOString().substring(0,7);
+const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const todayName=DAYS[today.getDay()];
+const workingToday=Object.keys(TEAMS).filter(t=>TEAMS[t].off!==todayName&&todayName!=='Sunday');
+
+function bId(sp){return sp.replace(/\s+/g,'-').toLowerCase().replace(/[^a-z0-9-]/g,'');}
+function fmt$(v){return v>0?'$'+Math.round(v).toLocaleString():'—';}
+function unitColor(u){return u>=13?'u-green':u>=8?'u-yellow':'u-red';}
+function projEOM(mtd){return Math.round((mtd/Math.max(dom,1))*dim);}
+
+function updateDT(){
+  const n=new Date(),days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  let h=n.getHours(),m=n.getMinutes();const ampm=h>=12?'PM':'AM';h=h%12||12;
+  const el=document.getElementById('eod-dt');
+  if(el)el.textContent=days[n.getDay()]+' '+months[n.getMonth()]+' '+n.getDate()+' · '+h+':'+(m<10?'0':'')+m+' '+ampm;
+}
+
+function checkGate(){
+  if(document.getElementById('gate-inp').value==='3350'){
+    document.getElementById('gate-bg').style.display='none';
+    document.getElementById('eod-content').style.display='block';
+    document.getElementById('bulk-date').value=today.toISOString().split('T')[0];
+    workingToday.forEach(t=>{const b=document.getElementById('badge-'+t);if(b)b.style.display='inline';});
+    updateDT();setInterval(updateDT,30000);
+    loadAllEOD(()=>{renderScoreboard();buildBulkTable();loadExistingData();});
+  } else {
+    document.getElementById('gate-err').textContent='Incorrect PIN — try again';
+  }
+}
+document.getElementById('gate-inp').addEventListener('keydown',e=>{if(e.key==='Enter')checkGate();});
+
+function loadAllEOD(cb){
+  fetch(DB_URL+'/eod.json').then(r=>r.json()).then(data=>{allEOD=data||{};if(cb)cb();}).catch(()=>{allEOD={};if(cb)cb();});
+}
+
+function getSPMTD(sp){
+  const id=bId(sp);let units=0,fe=0,be=0;
+  Object.keys(allEOD).forEach(date=>{
+    if(!date.startsWith(month))return;
+    const d=allEOD[date];
+    if(d&&d[id]){units+=d[id].appt_sold||0;fe+=d[id].fe_gross||0;be+=d[id].be_gross||0;}
+  });
+  return{units,fe,be};
+}
+
+function renderScoreboard(){
+  let tbHtml='';const fmData={};
+  const teamColors={A:'#ef4444',B:'#3b82f6',C:'#22c55e'};
+  Object.keys(TEAMS).forEach(team=>{
+    let tUnits=0,tFE=0,tBE=0;
+    Object.keys(TEAMS[team].fms).forEach(fm=>{
+      let fUnits=0,fFE=0,fBE=0;
+      TEAMS[team].fms[fm].forEach(sp=>{const d=getSPMTD(sp);fUnits+=d.units;fFE+=d.fe;fBE+=d.be;});
+      tUnits+=fUnits;tFE+=fFE;tBE+=fBE;
+      fmData[fm]={units:fUnits,fe:fFE,be:fBE,team};
+    });
+    const proj=projEOM(tUnits);const uc=unitColor(tUnits);
+    const isWorking=workingToday.includes(team);
+    tbHtml+=`<div class="sb-team" style="border-top-color:${teamColors[team]}">
+      <div class="sb-team-name">${team} Team ${isWorking?'<span style="background:#22c55e;color:#000;font-size:10px;padding:1px 6px;border-radius:6px;margin-left:4px;">TODAY</span>':''}</div>
+      <div class="sb-row"><span class="sb-lbl">Units MTD</span><span class="sb-val ${uc}">${tUnits} <span style="font-size:10px;color:var(--muted);">→ ${proj} EOM</span></span></div>
+      <div class="sb-row"><span class="sb-lbl">FE Gross</span><span class="sb-val sb-green">${fmt$(tFE)}</span></div>
+      <div class="sb-row"><span class="sb-lbl">BE Gross</span><span class="sb-val sb-yellow">${fmt$(tBE)}</span></div>
+      <div class="sb-row"><span class="sb-lbl">Total Gross</span><span class="sb-val" style="color:#ffffff">${fmt$(tFE+tBE)}</span></div>
+    </div>`;
+  });
+  document.getElementById('sb-teams').innerHTML=tbHtml;
+
+  const teamColors2={A:'#ef4444',B:'#3b82f6',C:'#22c55e'};
+  document.getElementById('fm-scoreboard').innerHTML=Object.keys(fmData).map(fm=>{
+    const d=fmData[fm];const proj=projEOM(d.units);const uc=unitColor(d.units);
+    return`<div class="fm-card" style="border-left-color:${teamColors2[d.team]}">
+      <div class="fm-name">${fm} <span style="font-size:10px;color:var(--muted);font-weight:400">(${d.team})</span></div>
+      <div class="fm-row"><span class="fm-lbl">Units MTD</span><span class="fm-val ${uc}">${d.units} → ${proj}</span></div>
+      <div class="fm-row"><span class="fm-lbl">FE</span><span class="fm-val" style="color:#22c55e">${fmt$(d.fe)}</span></div>
+      <div class="fm-row"><span class="fm-lbl">BE</span><span class="fm-val" style="color:#e67e00">${fmt$(d.be)}</span></div>
+    </div>`;
+  }).join('');
+}
+
+function buildBulkTable(){
+  let html='';
+  Object.keys(TEAMS).forEach(team=>{
+    Object.keys(TEAMS[team].fms).forEach(fm=>{
+      html+=`<tr class="fm-hdr-row" data-team="${team}" data-fm="${fm}"><td colspan="15">FM: ${fm} | ${team} Team</td></tr>`;
+      TEAMS[team].fms[fm].forEach(sp=>{
+        const id=bId(sp);const mtd=getSPMTD(sp);const proj=projEOM(mtd.units);const uc=unitColor(mtd.units);
+        html+=`<tr id="br-${id}" data-team="${team}" data-fm="${fm}" class="sp-row">
+          <td>${sp}</td>
+          <td><input type="number" class="cw-f" id="b${id}c" min="0" value="0"></td>
+          <td><input type="number" class="cw-f" id="b${id}u" min="0" value="0"></td>
+          <td><input type="number" class="cw-f" id="b${id}k" min="0" value="0"></td>
+          <td><input type="number" class="cv-f" id="b${id}cv" min="0" value="0"></td>
+          <td><input type="number" id="b${id}s" min="0" value="0"></td>
+          <td><input type="number" id="b${id}n" min="0" value="0"></td>
+          <td><input type="number" id="b${id}w" min="0" value="0"></td>
+          <td><input type="number" id="b${id}d" min="0" value="0"></td>
+          <td><input type="number" class="fe-f" id="b${id}f" min="0" value="0"></td>
+          <td><input type="number" class="be-f" id="b${id}e" min="0" value="0"></td>
+          <td class="track-cell ${uc}" id="mtd-u-${id}">${mtd.units}</td>
+          <td class="proj-cell ${uc}" id="proj-${id}">→${proj}</td>
+          <td class="track-cell" style="color:#6f42c1;font-size:11px" id="mtd-fe-${id}">${fmt$(mtd.fe)}</td>
+          <td class="track-cell" style="color:#e67e00;font-size:11px" id="mtd-be-${id}">${fmt$(mtd.be)}</td>
+        </tr>`;
+      });
+    });
+  });
+  document.getElementById('bulk-tbody').innerHTML=html;
+  setView('all');
+}
+
+function setView(v){
+  document.querySelectorAll('.ftbtn').forEach(b=>b.classList.remove('active'));
+  const btn=document.getElementById('vw-'+v);if(btn)btn.classList.add('active');
+  ['A','B','C'].forEach(t=>{const h=document.getElementById('team-hdr-'+t);if(h)h.classList.toggle('show',v===t);});
+  document.querySelectorAll('.sp-row,.fm-hdr-row').forEach(row=>{
+    const team=row.getAttribute('data-team');const fm=row.getAttribute('data-fm');let show=false;
+    if(v==='all')show=true;
+    else if(v==='A'||v==='B'||v==='C')show=(team===v);
+    else if(v.startsWith('fm-'))show=(fm===v.replace('fm-',''));
+    row.style.display=show?'':'none';
+  });
+}
+
+function loadExistingData(){
+  const date=document.getElementById('bulk-date').value;if(!date)return;
+  fetch(DB_URL+'/eod/'+date+'.json').then(r=>r.json()).then(data=>{
+    if(!data)return;
+    Object.keys(data).forEach(id=>{
+      const d=data[id];
+      const set=(f,v)=>{const el=document.getElementById('b'+id+f);if(el)el.value=v||0;};
+      set('c',d.calls);set('u',d.unique);set('k',d.contacts);set('cv',d.covideo_sent);
+      set('s',d.appt_set);set('n',d.appt_confirmed);set('w',d.appt_showed);set('d',d.appt_sold);
+      set('f',d.fe_gross);set('e',d.be_gross);
+    });
+    bulkToast('Existing data loaded for '+date);
+  }).catch(()=>{});
+}
+
+document.getElementById('bulk-csv').addEventListener('change',function(){
+  const file=this.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const lines=e.target.result.split('\n');
+    const headers=lines[0].split(',').map(h=>h.trim().toLowerCase());
+    let matched=0;
+    for(let i=1;i<lines.length;i++){
+      const vals=lines[i].split(',');if(vals.length<2)continue;
+      const row={};headers.forEach((h,j)=>row[h]=vals[j]?vals[j].trim():'');
+      let sp=row['agent']||row['name']||row['sp']||'';if(!sp)continue;
+      if(BCWMAP[sp])sp=BCWMAP[sp];
+      const id=bId(sp);const ce=document.getElementById('b'+id+'c');
+      if(ce){
+        ce.value=parseInt(row['total outbound']||row['calls']||0);
+        const ue=document.getElementById('b'+id+'u');const ke=document.getElementById('b'+id+'k');
+        if(ue)ue.value=parseInt(row['unique outbound']||row['unique']||0);
+        if(ke)ke.value=parseInt(row['live convo']||row['contacts']||0);
+        matched++;
+      }
+    }
+    document.getElementById('bulk-csv-ok').textContent='✅ CW: '+matched+' matched';
+    bulkToast('CarWars loaded — '+matched+' SPs');
+  };
+  reader.readAsText(file);
+});
+
+document.getElementById('bulk-cv-csv').addEventListener('change',function(){
+  const file=this.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const lines=e.target.result.split('\n');
+    const headers=lines[0].split(',').map(h=>h.trim().toLowerCase());
+    let matched=0;
+    for(let i=1;i<lines.length;i++){
+      const vals=lines[i].split(',');if(vals.length<2)continue;
+      const row={};headers.forEach((h,j)=>row[h]=vals[j]?vals[j].trim():'');
+      let sp=row['name']||row['agent']||row['rep']||'';if(!sp)continue;
+      if(CVMAP[sp])sp=CVMAP[sp];
+      const id=bId(sp);const cve=document.getElementById('b'+id+'cv');
+      if(cve){cve.value=parseInt(row['sent']||row['videos sent']||row['total sent']||0);matched++;}
+    }
+    document.getElementById('bulk-cv-ok').textContent='✅ CV: '+matched+' matched';
+    bulkToast('Covideo loaded — '+matched+' SPs');
+  };
+  reader.readAsText(file);
+});
+
+function bulkSaveAll(){
+  const date=document.getElementById('bulk-date').value;
+  const data={};let saved=0;
+  document.querySelectorAll('.sp-row').forEach(row=>{
+    const id=row.id.replace('br-','');
+    const nameEl=row.querySelector('td:first-child');if(!nameEl)return;
+    const sp=nameEl.textContent.trim();
+    const g=f=>{const el=document.getElementById('b'+id+f);return el?parseInt(el.value)||0:0;};
+    const c=g('c'),u=g('u'),k=g('k'),cv=g('cv'),s=g('s'),n=g('n'),w=g('w'),d=g('d'),f=g('f'),be=g('e');
+    if(c||u||k||cv||s||n||w||d||f||be){
+      data[id]={name:sp,calls:c,unique:u,contacts:k,covideo_sent:cv,appt_set:s,appt_confirmed:n,appt_showed:w,appt_sold:d,fe_gross:f,be_gross:be,timestamp:Date.now()};
+      row.classList.add('saved-row');saved++;
+    }
+  });
+  fetch(DB_URL+'/eod/'+date+'.json',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
+    .then(()=>{
+      bulkToast('✅ Saved — '+saved+' SPs to Firebase!');
+      loadAllEOD(()=>{renderScoreboard();buildBulkTable();});
+    })
+    .catch(()=>bulkToast('❌ Error saving — check connection'));
+}
+
+function bulkToast(msg){
+  const t=document.getElementById('bulk-toast');
+  t.textContent=msg;t.style.display='block';
+  setTimeout(()=>t.style.display='none',4000);
+}
+
+function toggleNav(){document.getElementById('ess-drawer').classList.toggle('open');}
+document.querySelectorAll('#ess-drawer a').forEach(a=>a.addEventListener('click',()=>document.getElementById('ess-drawer').classList.remove('open')));
+</script>
+</body>
+</html>
