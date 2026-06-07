@@ -6,108 +6,66 @@
 <title>ESS — Express Sales System</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg:#0a0c10;--surface:#12151d;--surface2:#1a1e28;--border:#3d4460;
+  :root{--bg:#0a0c10;--surface:#12151d;--surface2:#1a1e28;--border:#3d4460;
     --card-bg:#181c28;--accent:#e8a020;--accent2:#f0c060;--green:#22c55e;
-    --yellow:#f59e0b;--red:#ef4444;--blue:#3b82f6;--text:#eceef5;--muted:#7a859a;
-    --radius:10px;
-  }
+    --yellow:#f59e0b;--red:#ef4444;--blue:#3b82f6;--text:#eceef5;--muted:#7a859a;--radius:10px;}
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;
-    font-size:15px;min-height:100vh;padding-bottom:60px;padding-top:52px;}
+  body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;padding-bottom:60px;padding-top:64px;}
 
-  /* NAV */
-  #ess-nav{position:fixed;top:0;left:0;right:0;width:100%;background:#0d0f14;
-    border-bottom:2px solid #e8a020;display:flex;align-items:center;
-    justify-content:space-between;padding:8px 16px;z-index:999999;
-    font-family:'Barlow Condensed',sans-serif;height:52px;}
-  #ess-nav .nav-logo{font-size:23px;font-weight:900;color:#e8a020;text-decoration:none;
-    letter-spacing:2px;text-transform:uppercase;flex-shrink:0;}
-  #ess-nav .nav-links{display:flex;gap:4px;align-items:center;margin-left:auto;}
-  #ess-nav .nav-links a{font-size:12px;color:#c8d0e0;text-decoration:none;font-weight:700;
-    font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px;text-transform:uppercase;
-    padding:5px 9px;border-radius:6px;border:1.5px solid transparent;white-space:nowrap;transition:all .2s;}
+  #ess-nav{position:fixed;top:0;left:0;right:0;width:100%;background:#0d0f14;border-bottom:3px solid #e8a020;display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:999999;font-family:'Barlow Condensed',sans-serif;height:64px;}
+  #ess-nav .nav-logo{font-size:32px;font-weight:900;color:#e8a020;text-decoration:none;letter-spacing:3px;text-transform:uppercase;flex-shrink:0;}
+  #ess-nav .nav-links{display:flex;gap:6px;align-items:center;margin-left:auto;}
+  #ess-nav .nav-links a{font-size:15px;color:#dde3ee;text-decoration:none;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;text-transform:uppercase;padding:6px 12px;border-radius:6px;border:2px solid transparent;white-space:nowrap;transition:all .2s;}
   #ess-nav .nav-links a:hover{color:#e8a020;border-color:#e8a020;}
   #ess-nav .nav-links a.nt{color:#22c55e;border-color:#22c55e;}
-  #ess-nav .nav-links a.nt:hover{background:rgba(34,197,94,.12);}
   #ess-nav .nav-links a.mt{color:#ef4444;border-color:#ef4444;}
-  #ess-nav .nav-links a.mt:hover{background:rgba(239,68,68,.12);}
-  #ess-nav .nav-div{width:1px;height:18px;background:#3d4460;flex-shrink:0;margin:0 3px;}
-  #ess-nav-toggle{display:none;background:none;border:1.5px solid #3d4460;border-radius:6px;
-    color:#e8a020;font-size:18px;padding:3px 9px;cursor:pointer;margin-left:10px;flex-shrink:0;}
-  #ess-drawer{display:none;position:fixed;top:52px;left:0;right:0;background:#0d0f14;
-    border-bottom:2px solid #e8a020;z-index:999998;padding:8px 12px 12px;
-    flex-direction:column;gap:4px;max-height:calc(100vh - 52px);overflow-y:auto;}
+  #ess-nav .nav-div{width:2px;height:24px;background:#3d4460;flex-shrink:0;margin:0 4px;}
+  #ess-nav-toggle{display:none;background:none;border:2px solid #3d4460;border-radius:6px;color:#e8a020;font-size:22px;padding:4px 10px;cursor:pointer;margin-left:10px;flex-shrink:0;}
+  #ess-drawer{display:none;position:fixed;top:64px;left:0;right:0;background:#0d0f14;border-bottom:3px solid #e8a020;z-index:999998;padding:10px 14px 14px;flex-direction:column;gap:6px;max-height:calc(100vh - 64px);overflow-y:auto;}
   #ess-drawer.open{display:flex;}
-  #ess-drawer a{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;
-    text-transform:uppercase;letter-spacing:.5px;color:#c8d0e0;text-decoration:none;
-    padding:10px 12px;border-radius:7px;border:1.5px solid #2a2f3d;transition:all .2s;}
+  #ess-drawer a{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#dde3ee;text-decoration:none;padding:12px 14px;border-radius:7px;border:2px solid #2a2f3d;transition:all .2s;}
   #ess-drawer a:hover{color:#e8a020;border-color:#e8a020;}
   #ess-drawer a.nt{color:#22c55e;border-color:#22c55e;}
   #ess-drawer a.mt{color:#ef4444;border-color:#ef4444;}
-  #ess-drawer .dsec{font-size:10px;color:#3d4460;text-transform:uppercase;letter-spacing:2px;
-    padding:8px 4px 2px;font-family:'Barlow Condensed',sans-serif;font-weight:700;}
-  @media(max-width:800px){#ess-nav .nav-links{display:none!important;}#ess-nav-toggle{display:block;}}
+  #ess-drawer .dsec{font-size:11px;color:#3d4460;text-transform:uppercase;letter-spacing:2px;padding:8px 4px 2px;font-family:'Barlow Condensed',sans-serif;font-weight:700;}
+  @media(max-width:900px){#ess-nav .nav-links{display:none!important;}#ess-nav-toggle{display:block;}}
 
-  /* HERO */
-  .hero{background:linear-gradient(135deg,#1a1000,#0a0c10);
-    border-bottom:2px solid var(--accent);padding:32px 20px 28px;text-align:center;}
-  .hero-logo{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:86px;
-    color:var(--accent);letter-spacing:6px;text-transform:uppercase;line-height:1;}
-  .hero-sub{font-size:19px;color:#dde3ee;letter-spacing:4px;text-transform:uppercase;
-    margin-top:6px;}
-  .hero-tagline{font-size:24px;color:#ffffff;margin-top:12px;font-weight:500;}
-  .hero-date{font-size:17px;color:#dde3ee;margin-top:6px;}
+  .hero{background:linear-gradient(135deg,#1a1000,#0a0c10);border-bottom:3px solid var(--accent);padding:40px 20px 36px;text-align:center;}
+  .hero-logo{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:96px;color:var(--accent);letter-spacing:8px;text-transform:uppercase;line-height:1;}
+  .hero-sub{font-size:20px;color:#dde3ee;letter-spacing:5px;text-transform:uppercase;margin-top:8px;font-family:'Barlow Condensed',sans-serif;}
+  .hero-tagline{font-size:26px;color:#ffffff;margin-top:14px;font-weight:600;font-family:'Barlow Condensed',sans-serif;}
+  .hero-date{font-size:18px;color:#dde3ee;margin-top:8px;font-family:'Barlow Condensed',sans-serif;}
 
-  /* SECTION */
-  .section{max-width:520px;margin:0 auto;padding:20px 12px 0;}
-  .section-label{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;
-    color:var(--muted);text-transform:uppercase;letter-spacing:3px;margin-bottom:10px;
-    padding-left:4px;}
+  .section{max-width:640px;margin:0 auto;padding:24px 16px 0;}
+  .section-label{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:#dde3ee;text-transform:uppercase;letter-spacing:3px;margin-bottom:12px;padding-left:4px;}
 
-  /* TOOL CARDS */
-  .tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
-  .tool-card{background:var(--card-bg);border:1.5px solid var(--border);
-    border-radius:var(--radius);padding:16px 14px;text-decoration:none;
-    display:flex;flex-direction:column;gap:6px;transition:all .2s;cursor:pointer;}
-  .tool-card:hover{border-color:var(--accent);background:#1e2030;transform:translateY(-1px);}
-  .tool-card.green{border-color:rgba(34,197,94,.3);}
-  .tool-card.green:hover{border-color:var(--green);}
-  .tool-card.red{border-color:rgba(239,68,68,.3);}
-  .tool-card.red:hover{border-color:var(--red);}
-  .tool-icon{font-size:24px;margin-bottom:2px;}
-  .tool-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:23px;
-    color:var(--text);letter-spacing:.5px;text-transform:uppercase;}
-  .tool-desc{font-size:16px;color:#dde3ee;line-height:1.4;}
-  .tool-card.green .tool-name{color:var(--green);}
-  .tool-card.red .tool-name{color:var(--red);}
-  .tool-card.accent .tool-name{color:var(--accent);}
-  .tool-card.accent{border-color:rgba(232,160,32,.3);}
-  .tool-card.accent:hover{border-color:var(--accent);}
-
-  /* WIDE CARD */
-  .tool-card-wide{background:var(--card-bg);border:1.5px solid var(--border);
-    border-radius:var(--radius);padding:16px 14px;text-decoration:none;
-    display:flex;align-items:center;gap:14px;transition:all .2s;margin-bottom:10px;}
-  .tool-card-wide:hover{border-color:var(--accent);background:#1e2030;}
-  .tool-card-wide .tool-icon{font-size:28px;flex-shrink:0;}
-  .tool-card-wide .tool-info{flex:1;}
-  .tool-card-wide .tool-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;
-    font-size:17px;color:var(--accent);letter-spacing:.5px;text-transform:uppercase;}
-  .tool-card-wide .tool-desc{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4;}
-  .tool-card-wide .arrow{font-size:18px;color:var(--muted);}
-
-  /* STATUS BAR */
-  .status-bar{background:var(--surface);border:1px solid var(--border);
-    border-radius:var(--radius);padding:12px 16px;margin-bottom:20px;
-    display:flex;align-items:center;gap:10px;}
-  .status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);
-    flex-shrink:0;box-shadow:0 0 6px var(--green);}
-  .status-text{font-size:14px;color:#dde3ee;}
+  .status-bar{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:24px;display:flex;align-items:center;gap:12px;}
+  .status-dot{width:10px;height:10px;border-radius:50%;background:var(--green);flex-shrink:0;}
+  .status-text{font-size:16px;color:#dde3ee;font-family:'Barlow Condensed',sans-serif;font-weight:700;}
   .status-text strong{color:var(--green);}
 
-  /* DIVIDER */
-  .divider{border:none;border-top:1px solid var(--border);margin:6px 0 16px;}
+  .tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;}
+  .tool-card{background:var(--card-bg);border:2px solid var(--border);border-radius:var(--radius);padding:20px 16px;text-decoration:none;display:flex;flex-direction:column;gap:8px;transition:all .2s;}
+  .tool-card:hover{border-color:var(--accent);background:#1e2030;transform:translateY(-2px);}
+  .tool-card.accent{border-color:rgba(232,160,32,.3);}
+  .tool-card.accent:hover{border-color:var(--accent);}
+  .tool-card.green{border-color:rgba(34,197,94,.3);}
+  .tool-card.green:hover{border-color:var(--green);}
+  .tool-icon{font-size:28px;}
+  .tool-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;letter-spacing:.5px;text-transform:uppercase;}
+  .tool-card.accent .tool-name{color:var(--accent);}
+  .tool-card.green .tool-name{color:var(--green);}
+  .tool-desc{font-size:15px;color:#dde3ee;line-height:1.4;}
+
+  .tool-card-wide{background:var(--card-bg);border:2px solid var(--border);border-radius:var(--radius);padding:20px 16px;text-decoration:none;display:flex;align-items:center;gap:16px;transition:all .2s;margin-bottom:12px;}
+  .tool-card-wide:hover{border-color:var(--accent);background:#1e2030;}
+  .tool-card-wide .tool-icon{font-size:32px;flex-shrink:0;}
+  .tool-card-wide .tool-info{flex:1;}
+  .tool-card-wide .tool-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;color:var(--accent);letter-spacing:.5px;text-transform:uppercase;}
+  .tool-card-wide .tool-desc{font-size:15px;color:#dde3ee;margin-top:4px;line-height:1.4;}
+  .tool-card-wide .arrow{font-size:22px;color:#dde3ee;}
+
+  .divider{border:none;border-top:2px solid var(--border);margin:8px 0 24px;}
 </style>
 </head>
 <body>
@@ -126,7 +84,7 @@
     <a href="/desk-handoff.html" class="nt">Handoff</a>
     <a href="/sp-training.html" class="nt">Training</a>
     <div class="nav-div"></div>
-    <a href="/eod-bulk.html" class="nt" style="color:#f59e0b;border-color:#f59e0b;">EOD</a>
+    <a href="/eod-bulk.html" style="color:#f59e0b;border-color:#f59e0b;">EOD</a>
     <a href="/ucm-dashboard.html" class="mt">UCM</a>
   </div>
   <button id="ess-nav-toggle" onclick="toggleNav()">☰</button>
@@ -157,13 +115,11 @@
 </div>
 
 <div class="section">
-
   <div class="status-bar">
     <div class="status-dot"></div>
     <div class="status-text">All systems <strong>online</strong> — Firebase connected</div>
   </div>
 
-  <!-- CORE TOOLS -->
   <div class="section-label">Core Tools</div>
   <div class="tool-grid">
     <a href="/big-board.html" class="tool-card accent">
@@ -174,7 +130,7 @@
     <a href="/fm-floor.html" class="tool-card accent">
       <div class="tool-icon">📋</div>
       <div class="tool-name">FM Floor</div>
-      <div class="tool-desc">Floor manager view & traffic tracking</div>
+      <div class="tool-desc">Floor manager view & SP status tracking</div>
     </a>
     <a href="/greeter.html" class="tool-card accent">
       <div class="tool-icon">👋</div>
@@ -190,9 +146,7 @@
 
   <hr class="divider">
 
-  <!-- CVE & PP TOOLS -->
   <div class="section-label">CVE & PP Tools</div>
-
   <a href="/cve.html" class="tool-card-wide">
     <div class="tool-icon">🚗</div>
     <div class="tool-info">
@@ -201,7 +155,6 @@
     </div>
     <div class="arrow">›</div>
   </a>
-
   <div class="tool-grid">
     <a href="/pp-scripts.html" class="tool-card green">
       <div class="tool-icon">🪝</div>
@@ -227,17 +180,23 @@
 
   <hr class="divider">
 
-  <!-- MANAGER -->
   <div class="section-label">Manager Access</div>
-  <a href="/ucm-dashboard.html" class="tool-card-wide red" style="border-color:rgba(239,68,68,.3);">
+  <a href="/eod-bulk.html" class="tool-card-wide" style="border-color:rgba(245,158,11,.3);">
+    <div class="tool-icon">📊</div>
+    <div class="tool-info">
+      <div class="tool-name" style="color:#f59e0b;">EOD Bulk Entry</div>
+      <div class="tool-desc">Daily data entry — CarWars CSV, Covideo CSV, appointments & gross</div>
+    </div>
+    <div class="arrow">›</div>
+  </a>
+  <a href="/ucm-dashboard.html" class="tool-card-wide" style="border-color:rgba(239,68,68,.3);">
     <div class="tool-icon">🔐</div>
     <div class="tool-info">
-      <div class="tool-name" style="color:var(--red);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:17px;letter-spacing:.5px;text-transform:uppercase;">UCM Dashboard</div>
+      <div class="tool-name" style="color:#ef4444;">UCM Dashboard</div>
       <div class="tool-desc">Manager view — CVE submissions, deal status, PP temperature</div>
     </div>
     <div class="arrow">›</div>
   </a>
-
 </div>
 
 <script>
