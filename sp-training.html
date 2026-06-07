@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ESS — Staff Directory</title>
+<title>ESS — SP Training Card</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{--bg:#0a0c10;--surface:#12151d;--surface2:#1a1e28;--border:#3d4460;
@@ -29,48 +29,43 @@
   #ess-drawer .dsec{font-size:11px;color:#3d4460;text-transform:uppercase;letter-spacing:2px;padding:8px 4px 2px;font-family:'Barlow Condensed',sans-serif;font-weight:700;}
   @media(max-width:900px){#ess-nav .nav-links{display:none!important;}#ess-nav-toggle{display:block;}}
 
-  .s-header{background:linear-gradient(135deg,#1a1000,#0d0f14);border-bottom:3px solid var(--accent);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
-  .s-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:32px;color:var(--accent);text-transform:uppercase;letter-spacing:3px;}
-  .s-sub{font-size:14px;color:#dde3ee;margin-top:2px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;}
+  .t-header{background:linear-gradient(135deg,#1a1000,#0d0f14);border-bottom:3px solid var(--accent);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  .t-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:32px;color:var(--accent);text-transform:uppercase;letter-spacing:3px;}
+  .t-sub{font-size:14px;color:#dde3ee;margin-top:2px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;}
 
-  /* FILTER BAR */
-  .filter-bar{display:flex;gap:8px;padding:14px 20px;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap;align-items:center;}
-  .filter-btn{padding:7px 18px;border-radius:8px;border:2px solid var(--border);background:transparent;color:#dde3ee;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;cursor:pointer;text-transform:uppercase;letter-spacing:.5px;transition:all .2s;}
-  .filter-btn:hover{border-color:var(--accent);color:var(--accent);}
-  .filter-btn.active{background:var(--accent);color:#000;border-color:var(--accent);}
-  .search-box{margin-left:auto;background:var(--surface2);border:2px solid var(--border);border-radius:8px;color:#ffffff;padding:8px 14px;font-size:15px;font-family:'Barlow',sans-serif;outline:none;width:220px;transition:border-color .2s;}
-  .search-box:focus{border-color:var(--accent);}
+  /* TAB NAV */
+  .tab-nav{display:flex;background:var(--surface);border-bottom:2px solid var(--border);overflow-x:auto;scrollbar-width:none;}
+  .tab-nav::-webkit-scrollbar{display:none;}
+  .tab-pill{flex:1;min-width:100px;padding:12px 8px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);border-bottom:3px solid transparent;cursor:pointer;transition:all .2s;white-space:nowrap;}
+  .tab-pill.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .tab-content{display:none;padding:20px;max-width:680px;margin:0 auto;}
+  .tab-content.active{display:block;}
 
-  /* STAFF GRID */
-  .staff-wrap{padding:20px;}
-  .section-hdr{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--border);}
-  .staff-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:28px;}
-  .staff-card{background:var(--card-bg);border:2px solid var(--border);border-radius:var(--radius);padding:16px;transition:all .2s;}
-  .staff-card:hover{border-color:var(--accent);transform:translateY(-1px);}
-  .staff-card.mgr{border-color:rgba(232,160,32,.4);}
-  .staff-card.mgr:hover{border-color:var(--accent);}
-  .staff-card.sp{border-color:rgba(34,197,94,.2);}
-  .staff-card.sp:hover{border-color:var(--green);}
-  .staff-avatar{width:48px;height:48px;border-radius:50%;background:var(--surface2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;color:var(--accent);margin-bottom:10px;}
-  .staff-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;color:#ffffff;}
-  .staff-role{font-size:13px;color:var(--accent);font-weight:600;margin-top:3px;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.5px;}
-  .staff-team{font-size:12px;color:#dde3ee;margin-top:4px;}
-  .staff-phone{font-size:13px;color:#dde3ee;margin-top:6px;}
-  .staff-phone a{color:#dde3ee;text-decoration:none;}
-  .staff-phone a:hover{color:var(--accent);}
-  .role-badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:8px;font-weight:700;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;margin-top:6px;letter-spacing:.5px;}
-  .rb-gsm{background:rgba(232,160,32,.2);color:#e8a020;border:1px solid #e8a020;}
-  .rb-sm{background:rgba(59,130,246,.2);color:#3b82f6;border:1px solid #3b82f6;}
-  .rb-fm{background:rgba(139,92,246,.2);color:#8b5cf6;border:1px solid #8b5cf6;}
-  .rb-asm{background:rgba(245,158,11,.2);color:#f59e0b;border:1px solid #f59e0b;}
-  .rb-sp{background:rgba(34,197,94,.2);color:#22c55e;border:1px solid #22c55e;}
-  .rb-internet{background:rgba(232,160,32,.2);color:#e8a020;border:1px solid #e8a020;}
-
-  .team-a{border-left:4px solid #ef4444!important;}
-  .team-b{border-left:4px solid #3b82f6!important;}
-  .team-c{border-left:4px solid #22c55e!important;}
-
-  .empty-state{text-align:center;padding:60px;color:var(--muted);font-size:18px;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:2px;}
+  /* CARDS */
+  .train-card{background:var(--card-bg);border:1.5px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px;}
+  .train-card-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:17px;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .script-box{background:rgba(232,160,32,.07);border-left:4px solid var(--accent);border-radius:0 8px 8px 0;padding:14px 16px;margin:10px 0;font-style:italic;color:var(--accent2);font-size:15px;line-height:1.7;}
+  .tip-box{background:rgba(34,197,94,.07);border-left:4px solid var(--green);border-radius:0 8px 8px 0;padding:12px 14px;margin:10px 0;font-size:14px;color:#dde3ee;line-height:1.6;}
+  .tip-box strong{color:var(--green);}
+  .warn-box{background:rgba(239,68,68,.07);border-left:4px solid var(--red);border-radius:0 8px 8px 0;padding:12px 14px;margin:10px 0;font-size:14px;color:#dde3ee;line-height:1.6;}
+  .warn-box strong{color:var(--red);}
+  .step-list{list-style:none;counter-reset:step;}
+  .step-list li{counter-increment:step;display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;color:#dde3ee;line-height:1.5;}
+  .step-list li:last-child{border-bottom:none;}
+  .step-list li::before{content:counter(step);background:var(--accent);color:#000;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:14px;flex-shrink:0;margin-top:1px;}
+  .check-list{list-style:none;}
+  .check-list li{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;color:#dde3ee;line-height:1.5;}
+  .check-list li:last-child{border-bottom:none;}
+  .check-list li::before{content:'☐';font-size:18px;color:var(--accent);flex-shrink:0;line-height:1.2;}
+  .bm-table{width:100%;border-collapse:collapse;font-size:14px;}
+  .bm-table th{background:var(--surface2);color:#dde3ee;padding:10px 12px;text-align:left;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.5px;}
+  .bm-table td{padding:10px 12px;border-bottom:1px solid var(--border);color:#dde3ee;}
+  .bm-table tr:last-child td{border-bottom:none;}
+  .bm-val{color:var(--green);font-weight:700;font-family:'Barlow Condensed',sans-serif;font-size:16px;}
+  .divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
+  .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;font-family:'Barlow Condensed',sans-serif;font-weight:700;}
+  .highlight{color:var(--accent);font-weight:700;}
+  p{color:#dde3ee;font-size:14px;line-height:1.7;margin-bottom:10px;}
 </style>
 </head>
 <body>
@@ -110,134 +105,220 @@
   <a href="/ucm-dashboard.html" class="mt">🔐 UCM Dashboard</a>
 </div>
 
-<div class="s-header">
+<div class="t-header">
   <div>
-    <div class="s-title">👤 Staff Directory</div>
-    <div class="s-sub">Pat Lobb Toyota McKinney — Sales Team</div>
+    <div class="t-title">📌 SP Training Card</div>
+    <div class="t-sub">Pat Lobb Toyota McKinney — Quick Reference Guide</div>
   </div>
 </div>
 
-<div class="filter-bar">
-  <button class="filter-btn active" onclick="setFilter('all')" id="f-all">All</button>
-  <button class="filter-btn" onclick="setFilter('mgmt')" id="f-mgmt">Management</button>
-  <button class="filter-btn" onclick="setFilter('A')" id="f-A">A Team</button>
-  <button class="filter-btn" onclick="setFilter('B')" id="f-B">B Team</button>
-  <button class="filter-btn" onclick="setFilter('C')" id="f-C">C Team</button>
-  <input type="text" class="search-box" id="search" placeholder="🔍 Search name..." oninput="renderStaff()">
+<div class="tab-nav">
+  <div class="tab-pill active" onclick="goTab(0)">Daily Goals</div>
+  <div class="tab-pill" onclick="goTab(1)">Phone Process</div>
+  <div class="tab-pill" onclick="goTab(2)">Meet & Greet</div>
+  <div class="tab-pill" onclick="goTab(3)">CVE Process</div>
+  <div class="tab-pill" onclick="goTab(4)">PP Hooks</div>
+  <div class="tab-pill" onclick="goTab(5)">Benchmarks</div>
+  <div class="tab-pill" onclick="goTab(6)">Covideo</div>
 </div>
 
-<div class="staff-wrap" id="staff-wrap"></div>
+<!-- TAB 0: DAILY GOALS -->
+<div class="tab-content active" id="tab0">
+  <div class="train-card">
+    <div class="train-card-title">🎯 Daily BDC / Phone Goals</div>
+    <table class="bm-table">
+      <tr><th>Metric</th><th>Daily Goal</th></tr>
+      <tr><td>📞 Calls Made</td><td><span class="bm-val">30</span></td></tr>
+      <tr><td>🗣️ Live Connections</td><td><span class="bm-val">4</span></td></tr>
+      <tr><td>🎬 Covideo — Face/Name</td><td><span class="bm-val">4</span></td></tr>
+      <tr><td>📅 Appointments Set</td><td><span class="bm-val">2</span></td></tr>
+      <tr><td>✅ Appointments Confirmed</td><td><span class="bm-val">2</span></td></tr>
+      <tr><td>🚗 Covideo — Actual Car</td><td><span class="bm-val">2</span></td></tr>
+      <tr><td>🎬 Total Covideos</td><td><span class="bm-val">6</span></td></tr>
+    </table>
+  </div>
+  <div class="train-card">
+    <div class="train-card-title">🏆 Store Appointment Goals</div>
+    <table class="bm-table">
+      <tr><th>Day</th><th>Goal</th></tr>
+      <tr><td>Weekday</td><td><span class="bm-val">40 Appointments</span></td></tr>
+      <tr><td>Saturday</td><td><span class="bm-val">80 Appointments</span></td></tr>
+    </table>
+  </div>
+  <div class="train-card">
+    <div class="train-card-title">📊 Monthly Unit Minimum</div>
+    <div class="tip-box"><strong>Minimum:</strong> 8 units per month<br><strong>Target:</strong> 13+ units per month<br><strong>Store Goal:</strong> 1,000 units per year</div>
+    <div class="warn-box"><strong>Below 8 units = at risk.</strong> Talk to your FM immediately about your plan.</div>
+  </div>
+</div>
+
+<!-- TAB 1: PHONE PROCESS -->
+<div class="tab-content" id="tab1">
+  <div class="train-card">
+    <div class="train-card-title">📞 Inbound Phone Process</div>
+    <ul class="step-list">
+      <li>Answer within 3 rings. <span class="highlight">"Thank you for calling Pat Lobb Toyota McKinney, this is [Name], how can I help you?"</span></li>
+      <li>Get their name and use it immediately. Build rapport in the first 30 seconds.</li>
+      <li>Identify the vehicle they're calling about. Ask about their current vehicle.</li>
+      <li>DO NOT quote price on the phone. <span class="highlight">"The best way to get you an accurate number is to come in — can we set that up?"</span></li>
+      <li>Set the appointment. Offer two time options. <span class="highlight">"I have today at 3pm or tomorrow at 11am — which works better for you?"</span></li>
+      <li>Get their cell number and email. Confirm the appointment time.</li>
+      <li>Send Covideo immediately after hanging up.</li>
+    </ul>
+  </div>
+  <div class="train-card">
+    <div class="train-card-title">📞 Outbound Call Process</div>
+    <ul class="step-list">
+      <li>Identify yourself and the dealership. Keep your energy HIGH.</li>
+      <li>Reference WHY you're calling. <span class="highlight">"I'm reaching out because we have a [vehicle] that matches exactly what you were looking for..."</span></li>
+      <li>If voicemail — leave a SHORT message (under 20 seconds) and send a Covideo immediately after.</li>
+      <li>Attempt 7 contacts before marking as unable to reach. Mix calls, texts, and Covideos.</li>
+      <li>Goal every call: SET THE APPOINTMENT.</li>
+    </ul>
+    <div class="tip-box"><strong>Pro tip:</strong> First one to speak after asking for the appointment loses. Ask — then stay silent.</div>
+  </div>
+</div>
+
+<!-- TAB 2: MEET & GREET -->
+<div class="tab-content" id="tab2">
+  <div class="train-card">
+    <div class="train-card-title">👋 Meet & Greet Process</div>
+    <ul class="step-list">
+      <li>Greet within 60 seconds of arrival. Smile. Make eye contact. Firm handshake.</li>
+      <li><span class="highlight">"Welcome to Pat Lobb Toyota McKinney! I'm [Name] — are you here to see anyone specific or can I help you out today?"</span></li>
+      <li>Get their name and use it. <span class="highlight">"Great to meet you [Name]!"</span></li>
+      <li>Find out what brings them in today. Listen MORE than you talk.</li>
+      <li>If appointment — confirm who they're seeing and notify that SP immediately.</li>
+      <li>Log the customer into the Greeter system before leaving the welcome area.</li>
+      <li>Walk them to the vehicle or desk — never point.</li>
+    </ul>
+  </div>
+  <div class="train-card">
+    <div class="train-card-title">💬 Key Discovery Questions</div>
+    <ul class="check-list">
+      <li>What brings you in today?</li>
+      <li>What are you currently driving?</li>
+      <li>Are you looking to trade that in?</li>
+      <li>Do you have a specific vehicle in mind?</li>
+      <li>Is this primarily for you or someone else?</li>
+      <li>What's most important to you in your next vehicle?</li>
+      <li>Have you been to Pat Lobb before?</li>
+    </ul>
+  </div>
+</div>
+
+<!-- TAB 3: CVE PROCESS -->
+<div class="tab-content" id="tab3">
+  <div class="train-card">
+    <div class="train-card-title">🚗 Customer Vehicle Evaluation</div>
+    <p>The CVE is completed on EVERY customer with a trade-in. This is your ammunition for the desk.</p>
+    <ul class="step-list">
+      <li><strong>Step 1 — Vehicle ID:</strong> Get the VIN or enter year/make/model. Ask for mileage verbally — customer states it out loud.</li>
+      <li><strong>Step 2 — Q&A:</strong> 6 questions. How long owned? Accidents? Mechanical issues? Loan? Two keys? Upgrades?</li>
+      <li><strong>Step 3 — Walk-Around:</strong> 13-point inspection ON SITE. Or phone notes for Site Unseen.</li>
+      <li><strong>Step 4 — PP Hooks:</strong> Toggle on each protection product present. Read the script. Record YES/SOMEWHAT/INDIFFERENT.</li>
+      <li><strong>Step 5 — Summary & Sign-Off:</strong> Review with customer. Type your name. Submit to Firebase.</li>
+    </ul>
+    <div class="tip-box"><strong>Remember:</strong> The CVE summary goes directly to the UCM. PP temperature is visible before you even get to the desk.</div>
+  </div>
+  <div class="train-card">
+    <div class="train-card-title">🎯 Soft Trade — "If It Makes Sense"</div>
+    <div class="script-box">"What would 'make sense' look like for you on the trade-in?"</div>
+    <p>Enter their number and the UCM rough range. The gap calculator will show:</p>
+    <ul class="check-list">
+      <li><span style="color:var(--green);">🟢 Under $1,000 gap — WORKABLE, close today</span></li>
+      <li><span style="color:var(--yellow);">🟡 $1,000-$3,000 gap — CLOSEABLE, tax savings play</span></li>
+      <li><span style="color:var(--red);">🔴 Over $3,000 gap — RESET, get vehicle in first</span></li>
+    </ul>
+    <div class="script-box">"If we could get you to [UCM Range] — would you be ready to move forward today?"</div>
+  </div>
+</div>
+
+<!-- TAB 4: PP HOOKS -->
+<div class="tab-content" id="tab4">
+  <div class="train-card">
+    <div class="train-card-title">🪝 Protection Package Hook Scripts</div>
+    <div class="label">Window Tint</div>
+    <div class="script-box">"I can see you have tint — kept it cooler in the Texas heat, protected the dash, gave you privacy... hasn't it made a difference?"</div>
+    <div class="label">Paint / Ceramic</div>
+    <div class="script-box">"Your paint still looks solid — wouldn't you say it was worth protecting that investment?"</div>
+    <div class="label">Interior Protection</div>
+    <div class="script-box">"Seats and carpet held up well — couldn't you see how that interior protection paid off?"</div>
+    <div class="label">Wheel Locks</div>
+    <div class="script-box">"Wheels are still on there — wouldn't you agree knowing they were locked gave you peace of mind?"</div>
+    <div class="label">Dent / Etch</div>
+    <div class="script-box">"No major dings — wouldn't you say having that protection kept small things from becoming expensive problems?"</div>
+  </div>
+  <div class="train-card">
+    <div class="train-card-title">🔒 Master Close</div>
+    <div class="script-box">"So when you think about everything that's kept your trade in the shape it's in today — wouldn't you say investing in protecting your vehicle was absolutely worth it?"</div>
+    <div class="warn-box"><strong>SILENCE after asking.</strong> First one to speak loses. Hold it.</div>
+    <div class="tip-box"><strong>Monthly breakdown script:</strong> "It's less than a tank of gas a month to protect your investment."</div>
+  </div>
+</div>
+
+<!-- TAB 5: BENCHMARKS -->
+<div class="tab-content" id="tab5">
+  <div class="train-card">
+    <div class="train-card-title">📊 Store Benchmarks</div>
+    <table class="bm-table">
+      <tr><th>Metric</th><th>Benchmark</th></tr>
+      <tr><td>In-Store Close Rate</td><td><span class="bm-val">45–50%</span></td></tr>
+      <tr><td>Appt Sold / Show</td><td><span class="bm-val">50%</span></td></tr>
+      <tr><td>Appt Show / Set</td><td><span class="bm-val">65%</span></td></tr>
+      <tr><td>Appt Confirmation Rate</td><td><span class="bm-val">80%</span></td></tr>
+      <tr><td>Internet Closing Rate</td><td><span class="bm-val">15%</span></td></tr>
+      <tr><td>Phone Closing Rate</td><td><span class="bm-val">30% minimum</span></td></tr>
+      <tr><td>Appt Set to Leads — Internet</td><td><span class="bm-val">50%</span></td></tr>
+      <tr><td>Appt Set to Leads — Phone</td><td><span class="bm-val">65%</span></td></tr>
+      <tr><td>Appt Set to Leads — Combined</td><td><span class="bm-val">55%</span></td></tr>
+      <tr><td>Daily Appts Set — Weekday</td><td><span class="bm-val">40</span></td></tr>
+      <tr><td>Daily Appts Set — Saturday</td><td><span class="bm-val">80</span></td></tr>
+    </table>
+  </div>
+  <div class="train-card">
+    <div class="train-card-title">🎯 SP Unit Goals</div>
+    <table class="bm-table">
+      <tr><th>Level</th><th>Units / Month</th><th>Status</th></tr>
+      <tr><td>Minimum</td><td><span class="bm-val">8</span></td><td style="color:var(--red);">🔴 Required</td></tr>
+      <tr><td>On Track</td><td><span class="bm-val">10–14</span></td><td style="color:var(--yellow);">🟡 Working</td></tr>
+      <tr><td>Target</td><td><span class="bm-val">15+</span></td><td style="color:var(--green);">🟢 Excelling</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- TAB 6: COVIDEO -->
+<div class="tab-content" id="tab6">
+  <div class="train-card">
+    <div class="train-card-title">🎬 Covideo — The Right Way</div>
+    <p>Covideo is sent <span class="highlight">immediately after hanging up the phone</span>. No delay — strike while the iron is hot.</p>
+    <div class="label">If daylight / good lighting</div>
+    <div class="tip-box">Go to the vehicle immediately. Record ONE video covering both face/name intro AND vehicle walkaround. Show key features. Keep it under 90 seconds.</div>
+    <div class="script-box">"Hey [Name], it's [Your Name] from Pat Lobb Toyota McKinney — just wanted to put a face with a name and show you this incredible [vehicle] we have waiting for you! [walks around car] Can't wait to see you [day/time] — see you soon!"</div>
+    <div class="label">If too dark / bad lighting</div>
+    <div class="tip-box">Send Face/Name video immediately. Promise the car video for next morning.</div>
+    <div class="script-box">"Hey [Name], it's [Your Name] — leaving now but wanted to put a face with a name! I'll reach out with a video of the vehicle before you arrive to answer your questions and show off this terrific [vehicle] — see you soon!"</div>
+  </div>
+  <div class="train-card">
+    <div class="train-card-title">🎬 Covideo Cadence</div>
+    <table class="bm-table">
+      <tr><th>Trigger</th><th>Covideo Type</th><th>Timing</th></tr>
+      <tr><td>Appointment Set</td><td>Face + Car (or Face only if dark)</td><td><span class="bm-val">Immediately</span></td></tr>
+      <tr><td>If dark — car promised</td><td>Actual vehicle walkaround</td><td><span class="bm-val">Next morning</span></td></tr>
+      <tr><td>Day before appt</td><td>Reminder + excitement</td><td><span class="bm-val">Evening before</span></td></tr>
+      <tr><td>No show</td><td>Follow up — what happened?</td><td><span class="bm-val">Within 1 hour</span></td></tr>
+      <tr><td>After sale</td><td>Thank you + referral ask</td><td><span class="bm-val">Same day</span></td></tr>
+    </table>
+    <div class="warn-box"><strong>Never send a generic Covideo.</strong> Always use their name and reference their specific vehicle. Personalization is everything.</div>
+  </div>
+</div>
 
 <script>
-const MGMT=[
-  {name:'Tim O\'Grady',role:'Internet Manager',badge:'rb-internet',team:'mgmt',initials:'TO'},
-  {name:'Brent Williams',role:'GSM — A Team',badge:'rb-gsm',team:'A',initials:'BW'},
-  {name:'Sid Waldrop',role:'SM — NEW Cars — A Team',badge:'rb-sm',team:'A',initials:'SW'},
-  {name:'Aldo Cortes',role:'SM — USED Cars — A Team',badge:'rb-sm',team:'A',initials:'AC'},
-  {name:'James Brown',role:'SM — NEW Cars — B Team',badge:'rb-sm',team:'B',initials:'JB'},
-  {name:'Norm Nguyen',role:'SM — USED Cars — B Team',badge:'rb-sm',team:'B',initials:'NN'},
-  {name:'Kevin Bedford',role:'SM — NEW Cars — C Team',badge:'rb-sm',team:'C',initials:'KB'},
-  {name:'Matt Jirani',role:'SM — USED Cars — C Team',badge:'rb-sm',team:'C',initials:'MJ'},
-  {name:'Abe Cisneros',role:'FM — B Team',badge:'rb-fm',team:'B',initials:'AC'},
-  {name:'Devin Hawley',role:'FM — C Team',badge:'rb-fm',team:'C',initials:'DH'},
-  {name:'Khaled Fares',role:'FM — B Team',badge:'rb-fm',team:'B',initials:'KF'},
-  {name:'Karim Jaffer',role:'SM — USED Cars — C Team',badge:'rb-sm',team:'C',initials:'KJ'},
-];
-
-const TEAMS={
-  A:{fms:{
-    'Aldo':['Razaq Olayioye','Michelle Medina','Abbitoun Mumba'],
-    'Brent':['Rodney Bradley','Idalmy Santiago','Matt Unger','Clayton Paul'],
-    'Sid':['Nick Opie','Joseph Wright','Harrison Murphey','Alex Constantino','Yama Fakory','Ivan Williams'],
-    'Open':['Yaela Dror','Alexis Hernandez','Abraham Arevalo','Mo Elemam','Alex Teague']
-  }},
-  B:{fms:{
-    'Abe':['Isaac De Lima','Lex Woodard','Maricar Randall'],
-    'Khaled':['Hector Cervantes','Camron Galaviz','Simon Samples','JD Fulkerson'],
-    'James':['Duane May','Geremy Suyo','Adeel Aldomour'],
-    'Norm':['Adam Koran','Christian Collins','Emily Merrill','Miguel Cardenas','Ozzy Mamoor']
-  }},
-  C:{fms:{
-    'Devin':['Steven Meece','Randell Bailey','Roger Klein','Fabian Martinez'],
-    'Karim':['Hudson Barnes','Kamal Ramadan','Adeel Marchant','KB Kebron Kahsau'],
-    'Kevin':['Bubacarr Sowe','Parker Tallis','Matt Behzadnia','Ruben Silva'],
-    'Matt':['Angelo Perez','Jimmy Le','Mo Shabavek','Teo Massot']
-  }}
-};
-
-const TEAM_COLORS={A:'#ef4444',B:'#3b82f6',C:'#22c55e'};
-let currentFilter='all';
-
-function initials(name){const p=name.trim().split(' ');return(p[0][0]+(p[p.length-1][0]||'')).toUpperCase();}
-
-function getInitialsColor(name){const colors=['#e8a020','#22c55e','#3b82f6','#8b5cf6','#ef4444','#f59e0b'];let h=0;for(let i=0;i<name.length;i++)h=name.charCodeAt(i)+((h<<5)-h);return colors[Math.abs(h)%colors.length];}
-
-function setFilter(f){
-  currentFilter=f;
-  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('f-'+(f==='all'?'all':f==='mgmt'?'mgmt':f)).classList.add('active');
-  renderStaff();
+function goTab(n){
+  document.querySelectorAll('.tab-pill').forEach((p,i)=>p.classList.toggle('active',i===n));
+  document.querySelectorAll('.tab-content').forEach((c,i)=>c.classList.toggle('active',i===n));
+  window.scrollTo(0,0);
 }
-
-function renderStaff(){
-  const search=document.getElementById('search').value.toLowerCase();
-  const wrap=document.getElementById('staff-wrap');
-  let html='';
-
-  // MANAGEMENT
-  if(currentFilter==='all'||currentFilter==='mgmt'){
-    const mgmt=MGMT.filter(m=>!search||m.name.toLowerCase().includes(search));
-    if(mgmt.length){
-      html+=`<div class="section-hdr">Management</div><div class="staff-grid">`;
-      mgmt.forEach(m=>{
-        const col=getInitialsColor(m.name);
-        const teamCls=m.team==='A'?'team-a':m.team==='B'?'team-b':m.team==='C'?'team-c':'';
-        html+=`<div class="staff-card mgr ${teamCls}">
-          <div class="staff-avatar" style="color:${col};border-color:${col};">${initials(m.name)}</div>
-          <div class="staff-name">${m.name}</div>
-          <div class="staff-role">${m.role}</div>
-          <span class="role-badge ${m.badge}">${m.badge.replace('rb-','').toUpperCase()}</span>
-        </div>`;
-      });
-      html+='</div>';
-    }
-  }
-
-  // SALES PEOPLE BY TEAM
-  ['A','B','C'].forEach(team=>{
-    if(currentFilter!=='all'&&currentFilter!==team)return;
-    const teamColor=TEAM_COLORS[team];
-    let teamHtml='';
-    let count=0;
-    Object.keys(TEAMS[team].fms).forEach(fm=>{
-      const sps=TEAMS[team].fms[fm].filter(sp=>!search||sp.toLowerCase().includes(search));
-      if(!sps.length)return;
-      sps.forEach(sp=>{
-        const col=getInitialsColor(sp);
-        teamHtml+=`<div class="staff-card sp team-${team.toLowerCase()}">
-          <div class="staff-avatar" style="color:${col};border-color:${col};">${initials(sp)}</div>
-          <div class="staff-name">${sp}</div>
-          <div class="staff-role" style="color:${teamColor};">Sales Professional</div>
-          <div class="staff-team">FM: ${fm} · ${team} Team</div>
-          <span class="role-badge rb-sp">SP</span>
-        </div>`;
-        count++;
-      });
-    });
-    if(count>0){
-      html+=`<div class="section-hdr" style="color:${teamColor};">${team} Team <span style="color:var(--muted);font-size:14px;font-weight:400;">(${count} SPs)</span></div>`;
-      html+=`<div class="staff-grid">${teamHtml}</div>`;
-    }
-  });
-
-  if(!html){html='<div class="empty-state">No results found</div>';}
-  wrap.innerHTML=html;
-}
-
-renderStaff();
-</script>
-
-<script>
 function toggleNav(){document.getElementById('ess-drawer').classList.toggle('open');}
 document.querySelectorAll('#ess-drawer a').forEach(a=>a.addEventListener('click',()=>document.getElementById('ess-drawer').classList.remove('open')));
 </script>
