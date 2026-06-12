@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESS — Subscription Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0c10;--surface:#12151d;--surface2:#1a1e28;--border:#3d4460;
+    --card-bg:#181c28;--accent:#e8a020;--green:#22c55e;--red:#ef4444;
+    --blue:#3b82f6;--text:#eceef5;--radius:10px;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;}
+
+  /* LOGIN GATE */
+  .gate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .gate-card{background:var(--surface);border:2px solid var(--accent);border-radius:var(--radius);
+    padding:40px;width:100%;max-width:380px;text-align:center;}
+  .gate-logo{font-family:'Barlow Condensed',sans-serif;font-size:48px;font-weight:900;
+    color:var(--accent);letter-spacing:4px;margin-bottom:4px;}
+  .gate-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;
+    color:#ffffff;text-transform:uppercase;letter-spacing:2px;margin-bottom:24px;}
+  .gate-input{width:100%;background:var(--bg);border:2px solid var(--border);color:#ffffff;
+    padding:14px 16px;border-radius:8px;font-size:20px;font-family:'Barlow Condensed',sans-serif;
+    font-weight:700;outline:none;text-align:center;letter-spacing:4px;margin-bottom:14px;}
+  .gate-input:focus{border-color:var(--accent);}
+  .gate-btn{width:100%;background:var(--accent);color:#000;border:none;padding:14px;
+    border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;
+    letter-spacing:2px;text-transform:uppercase;cursor:pointer;}
+  .gate-err{color:var(--red);font-size:14px;font-weight:700;margin-bottom:12px;display:none;}
+
+  /* MAIN APP */
+  #app{display:none;}
+  nav{background:#0d0f14;border-bottom:3px solid var(--accent);padding:0 24px;height:64px;
+    display:flex;align-items:center;justify-content:space-between;}
+  .nav-logo{font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:900;
+    color:var(--accent);letter-spacing:3px;text-decoration:none;}
+  .nav-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;
+    color:#ffffff;text-transform:uppercase;letter-spacing:2px;}
+  .nav-logout{background:transparent;border:2px solid var(--border);color:#c8d0e0;
+    padding:8px 16px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;
+    font-size:16px;font-weight:700;cursor:pointer;letter-spacing:1px;text-transform:uppercase;}
+  .nav-logout:hover{border-color:var(--red);color:var(--red);}
+
+  /* STATS */
+  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:24px;max-width:1100px;margin:0 auto;}
+  .stat-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;}
+  .stat-num{font-family:'Barlow Condensed',sans-serif;font-size:48px;font-weight:900;color:var(--accent);}
+  .stat-label{font-size:13px;color:#c8d0e0;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-top:4px;}
+
+  /* TABS */
+  .tabs{display:flex;gap:0;border-bottom:2px solid var(--border);padding:0 24px;max-width:1100px;margin:0 auto;}
+  .tab{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;letter-spacing:1px;
+    text-transform:uppercase;padding:14px 20px;color:#c8d0e0;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;}
+  .tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .tab:hover{color:#ffffff;}
+
+  /* CONTENT PANELS */
+  .panel{display:none;max-width:1100px;margin:0 auto;padding:24px;}
+  .panel.active{display:block;}
+  .panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+  .panel-title{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;
+    color:#ffffff;text-transform:uppercase;letter-spacing:2px;}
+  .add-btn{background:var(--accent);color:#000;border:none;padding:10px 24px;border-radius:8px;
+    font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;letter-spacing:1px;
+    text-transform:uppercase;cursor:pointer;}
+  .add-btn:hover{opacity:.9;}
+
+  /* TABLE */
+  table{width:100%;border-collapse:collapse;}
+  th{background:var(--surface2);color:#c8d0e0;font-family:'Barlow Condensed',sans-serif;
+    font-size:14px;font-weight:900;text-transform:uppercase;letter-spacing:1px;
+    padding:12px 16px;text-align:left;border-bottom:2px solid var(--border);}
+  td{padding:14px 16px;border-bottom:1px solid var(--border);font-size:15px;color:var(--text);font-weight:600;vertical-align:middle;}
+  tr:hover td{background:rgba(255,255,255,.02);}
+  .badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:900;
+    letter-spacing:1px;text-transform:uppercase;font-family:'Barlow Condensed',sans-serif;}
+  .badge-green{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3);}
+  .badge-red{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3);}
+  .badge-gold{background:rgba(232,160,32,.15);color:var(--accent);border:1px solid rgba(232,160,32,.3);}
+  .badge-blue{background:rgba(59,130,246,.15);color:var(--blue);border:1px solid rgba(59,130,246,.3);}
+  .action-btn{background:transparent;border:1px solid var(--border);color:#c8d0e0;
+    padding:6px 14px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;
+    font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;text-transform:uppercase;margin-right:6px;}
+  .action-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .action-btn.danger:hover{border-color:var(--red);color:var(--red);}
+
+  /* MODAL */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:2000;
+    align-items:center;justify-content:center;padding:20px;}
+  .modal-overlay.active{display:flex;}
+  .modal{background:var(--surface);border:2px solid var(--accent);border-radius:var(--radius);
+    padding:32px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;}
+  .modal-title{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;
+    color:#ffffff;text-transform:uppercase;letter-spacing:2px;margin-bottom:20px;}
+  .form-group{margin-bottom:16px;}
+  .form-label{display:block;font-family:'Barlow Condensed',sans-serif;font-size:13px;
+    font-weight:900;color:#c8d0e0;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+  .form-input{width:100%;background:var(--bg);border:2px solid var(--border);color:#ffffff;
+    padding:12px 14px;border-radius:8px;font-size:16px;font-family:'Barlow',sans-serif;
+    font-weight:600;outline:none;}
+  .form-input:focus{border-color:var(--accent);}
+  .form-select{width:100%;background:var(--bg);border:2px solid var(--border);color:#ffffff;
+    padding:12px 14px;border-radius:8px;font-size:16px;font-family:'Barlow',sans-serif;
+    font-weight:600;outline:none;}
+  .modal-footer{display:flex;gap:12px;margin-top:20px;}
+  .modal-save{flex:1;background:var(--accent);color:#000;border:none;padding:13px;
+    border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:900;
+    letter-spacing:1px;text-transform:uppercase;cursor:pointer;}
+  .modal-cancel{flex:1;background:transparent;color:#c8d0e0;border:2px solid var(--border);
+    padding:13px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:19px;
+    font-weight:900;letter-spacing:1px;text-transform:uppercase;cursor:pointer;}
+  .modal-cancel:hover{border-color:var(--red);color:var(--red);}
+
+  /* DEMO REQUESTS */
+  .demo-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);
+    padding:20px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;}
+  .demo-name{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:#ffffff;}
+  .demo-detail{font-size:14px;color:#c8d0e0;font-weight:600;margin-top:4px;}
+  .demo-actions{display:flex;gap:10px;align-items:center;}
+
+  /* EMPTY STATE */
+  .empty{text-align:center;padding:60px 20px;color:#3d4460;}
+  .empty-icon{font-size:48px;margin-bottom:16px;}
+  .empty-text{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;
+    text-transform:uppercase;letter-spacing:1px;}
+
+  @media(max-width:700px){
+    .stats-row{grid-template-columns:repeat(2,1fr);}
+    table{font-size:13px;}
+    td,th{padding:10px 10px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN GATE -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="gate-logo">ESS</div>
+    <div class="gate-title">Subscription Admin</div>
+    <div class="gate-err" id="gateErr">Incorrect PIN</div>
+    <input class="gate-input" type="password" id="gatePin" placeholder="••••••"
+      maxlength="10" onkeydown="if(event.key==='Enter')checkPin()">
+    <button class="gate-btn" onclick="checkPin()">ACCESS ADMIN →</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <nav>
+    <span class="nav-logo">ESS</span>
+    <span class="nav-title">Subscription Admin</span>
+    <button class="nav-logout" onclick="logout()">Logout</button>
+  </nav>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-num" id="statActive">0</div>
+      <div class="stat-label">Active Dealers</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="statMRR">$0</div>
+      <div class="stat-label">Monthly MRR</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="statDemos">0</div>
+      <div class="stat-label">Demo Requests</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="statInactive">0</div>
+      <div class="stat-label">Inactive / Paused</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('dealers')">🏪 Active Dealers</div>
+    <div class="tab" onclick="switchTab('demos')">📋 Demo Requests</div>
+    <div class="tab" onclick="switchTab('inactive')">⏸️ Inactive</div>
+  </div>
+
+  <!-- DEALERS PANEL -->
+  <div class="panel active" id="panel-dealers">
+    <div class="panel-header">
+      <div class="panel-title">Active Dealer Subscriptions</div>
+      <button class="add-btn" onclick="openAddDealer()">+ Add Dealer</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Dealer Name</th>
+          <th>Access Code</th>
+          <th>Tier</th>
+          <th>Monthly Fee</th>
+          <th>Start Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="dealerTableBody">
+        <tr><td colspan="7"><div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Loading...</div></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- DEMOS PANEL -->
+  <div class="panel" id="panel-demos">
+    <div class="panel-header">
+      <div class="panel-title">Demo Requests</div>
+    </div>
+    <div id="demoList">
+      <div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Loading...</div></div>
+    </div>
+  </div>
+
+  <!-- INACTIVE PANEL -->
+  <div class="panel" id="panel-inactive">
+    <div class="panel-header">
+      <div class="panel-title">Inactive / Paused Dealers</div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Dealer Name</th>
+          <th>Tier</th>
+          <th>Paused Date</th>
+          <th>Reason</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="inactiveTableBody">
+        <tr><td colspan="5"><div class="empty"><div class="empty-icon">✅</div><div class="empty-text">No inactive dealers</div></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ADD/EDIT DEALER MODAL -->
+<div class="modal-overlay" id="dealerModal">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">Add New Dealer</div>
+    <div class="form-group">
+      <label class="form-label">Dealership Name *</label>
+      <input class="form-input" type="text" id="fDealerName" placeholder="e.g. Prestige Ford McKinney">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Access Code * (dealer uses this to log in)</label>
+      <input class="form-input" type="text" id="fAccessCode" placeholder="e.g. PRESTIGE2026" style="text-transform:uppercase;letter-spacing:2px;" oninput="this.value=this.value.toUpperCase()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Subscription Tier *</label>
+      <select class="form-select" id="fTier">
+        <option value="">— Select Tier —</option>
+        <option value="starter">Starter — $299/mo</option>
+        <option value="professional">Professional — $599/mo</option>
+        <option value="enterprise">Enterprise — $999/mo</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">GM / Contact Name</label>
+      <input class="form-input" type="text" id="fContact" placeholder="GM or Primary Contact">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Phone</label>
+      <input class="form-input" type="tel" id="fPhone" placeholder="(000) 000-0000">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input class="form-input" type="email" id="fEmail" placeholder="contact@dealership.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Start Date</label>
+      <input class="form-input" type="date" id="fStartDate">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes</label>
+      <input class="form-input" type="text" id="fNotes" placeholder="Any notes about this account">
+    </div>
+    <input type="hidden" id="fDocId">
+    <div class="modal-footer">
+      <button class="modal-save" onclick="saveDealer()">SAVE DEALER</button>
+      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc,
+         deleteDoc, serverTimestamp, query, orderBy }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey:"AIzaSyDdd6AGUGEdDsvtVB49kfYEyHaVJ5GwIhI",
+  authDomain:"express-sales-system.firebaseapp.com",
+  projectId:"express-sales-system",
+  storageBucket:"express-sales-system.firebasestorage.app",
+  messagingSenderId:"19982387786",
+  appId:"1:19982387786:web:2171af2fa7597f3c1bb4b3"
+});
+const db = getFirestore(app);
+
+const ADMIN_PIN = '1027ESS';
+const TIER_PRICES = { starter:299, professional:599, enterprise:999 };
+const TIER_LABELS = { starter:'Starter', professional:'Professional', enterprise:'Enterprise' };
+
+let allDealers = [];
+let allDemos   = [];
+
+// ── PIN CHECK ──
+window.checkPin = function() {
+  const pin = document.getElementById('gatePin').value;
+  if (pin === ADMIN_PIN) {
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    loadAll();
+  } else {
+    document.getElementById('gateErr').style.display = 'block';
+    document.getElementById('gatePin').value = '';
+  }
+};
+
+window.logout = function() {
+  document.getElementById('gate').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('gatePin').value = '';
+};
+
+// ── LOAD ALL DATA ──
+async function loadAll() {
+  await loadDealers();
+  await loadDemos();
+}
+
+async function loadDealers() {
+  try {
+    const snap = await getDocs(collection(db, 'ess_dealers'));
+    allDealers = [];
+    snap.forEach(d => allDealers.push({ id: d.id, ...d.data() }));
+    renderDealers();
+    updateStats();
+  } catch(e) { console.error(e); }
+}
+
+async function loadDemos() {
+  try {
+    const snap = await getDocs(collection(db, 'ess_demo_requests'));
+    allDemos = [];
+    snap.forEach(d => allDemos.push({ id: d.id, ...d.data() }));
+    renderDemos();
+    updateStats();
+  } catch(e) { console.error(e); }
+}
+
+// ── RENDER DEALERS ──
+function renderDealers() {
+  const active   = allDealers.filter(d => d.active !== false);
+  const inactive = allDealers.filter(d => d.active === false);
+
+  // Active table
+  const tbody = document.getElementById('dealerTableBody');
+  if (active.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><div class="empty-icon">🏪</div><div class="empty-text">No active dealers yet — add your first one</div></div></td></tr>';
+  } else {
+    tbody.innerHTML = active.map(d => {
+      const tier  = TIER_LABELS[d.tier] || d.tier || '—';
+      const price = TIER_PRICES[d.tier] ? '$' + TIER_PRICES[d.tier] + '/mo' : '—';
+      const start = d.startDate || '—';
+      return `<tr>
+        <td><strong>${d.dealerName || '—'}</strong><br><span style="font-size:12px;color:#c8d0e0;">${d.contact || ''}</span></td>
+        <td><code style="background:var(--surface2);padding:4px 10px;border-radius:4px;font-family:monospace;letter-spacing:2px;font-size:13px;">${d.accessCode || '—'}</code></td>
+        <td><span class="badge badge-gold">${tier}</span></td>
+        <td style="color:var(--green);font-weight:900;">${price}</td>
+        <td>${start}</td>
+        <td><span class="badge badge-green">Active</span></td>
+        <td>
+          <button class="action-btn" onclick="editDealer('${d.id}')">Edit</button>
+          <button class="action-btn danger" onclick="pauseDealer('${d.id}')">Pause</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Inactive table
+  const itbody = document.getElementById('inactiveTableBody');
+  if (inactive.length === 0) {
+    itbody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-icon">✅</div><div class="empty-text">No inactive dealers</div></div></td></tr>';
+  } else {
+    itbody.innerHTML = inactive.map(d => `<tr>
+      <td><strong>${d.dealerName || '—'}</strong></td>
+      <td><span class="badge badge-blue">${TIER_LABELS[d.tier] || '—'}</span></td>
+      <td>${d.pausedDate || '—'}</td>
+      <td style="color:#c8d0e0;">${d.pauseReason || '—'}</td>
+      <td><button class="action-btn" onclick="reactivateDealer('${d.id}')">Reactivate</button></td>
+    </tr>`).join('');
+  }
+}
+
+// ── RENDER DEMOS ──
+function renderDemos() {
+  const list = document.getElementById('demoList');
+  const newDemos = allDemos.filter(d => d.status !== 'converted' && d.status !== 'declined');
+  if (newDemos.length === 0) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No pending demo requests</div></div>';
+    return;
+  }
+  list.innerHTML = newDemos.map(d => `
+    <div class="demo-card">
+      <div>
+        <div class="demo-name">${d.dealer || '—'}</div>
+        <div class="demo-detail">Contact: ${d.name || '—'} · ${d.phone || '—'} · ${d.email || '—'}</div>
+        <div class="demo-detail" style="margin-top:4px;">
+          <span class="badge badge-gold">${d.tier || 'Tier TBD'}</span>
+          &nbsp;<span class="badge badge-blue">${d.size || 'Size TBD'}</span>
+        </div>
+      </div>
+      <div class="demo-actions">
+        <button class="action-btn" onclick="convertDemo('${d.id}','${(d.dealer||'').replace(/'/g,"\\'")}')">Convert to Dealer</button>
+        <button class="action-btn danger" onclick="declineDemo('${d.id}')">Decline</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── STATS ──
+function updateStats() {
+  const active   = allDealers.filter(d => d.active !== false);
+  const inactive = allDealers.filter(d => d.active === false);
+  const mrr      = active.reduce((sum, d) => sum + (TIER_PRICES[d.tier] || 0), 0);
+  const newDemos = allDemos.filter(d => d.status !== 'converted' && d.status !== 'declined');
+  document.getElementById('statActive').textContent   = active.length;
+  document.getElementById('statMRR').textContent      = '$' + mrr.toLocaleString();
+  document.getElementById('statDemos').textContent    = newDemos.length;
+  document.getElementById('statInactive').textContent = inactive.length;
+}
+
+// ── ADD DEALER ──
+window.openAddDealer = function() {
+  document.getElementById('modalTitle').textContent = 'Add New Dealer';
+  document.getElementById('fDealerName').value = '';
+  document.getElementById('fAccessCode').value = '';
+  document.getElementById('fTier').value = '';
+  document.getElementById('fContact').value = '';
+  document.getElementById('fPhone').value = '';
+  document.getElementById('fEmail').value = '';
+  document.getElementById('fStartDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('fNotes').value = '';
+  document.getElementById('fDocId').value = '';
+  document.getElementById('dealerModal').classList.add('active');
+};
+
+window.editDealer = function(id) {
+  const d = allDealers.find(x => x.id === id);
+  if (!d) return;
+  document.getElementById('modalTitle').textContent = 'Edit Dealer';
+  document.getElementById('fDealerName').value = d.dealerName || '';
+  document.getElementById('fAccessCode').value = d.accessCode || '';
+  document.getElementById('fTier').value = d.tier || '';
+  document.getElementById('fContact').value = d.contact || '';
+  document.getElementById('fPhone').value = d.phone || '';
+  document.getElementById('fEmail').value = d.email || '';
+  document.getElementById('fStartDate').value = d.startDate || '';
+  document.getElementById('fNotes').value = d.notes || '';
+  document.getElementById('fDocId').value = id;
+  document.getElementById('dealerModal').classList.add('active');
+};
+
+window.saveDealer = async function() {
+  const name = document.getElementById('fDealerName').value.trim();
+  const code = document.getElementById('fAccessCode').value.trim().toUpperCase();
+  const tier = document.getElementById('fTier').value;
+  if (!name || !code || !tier) { alert('Dealer name, access code, and tier are required.'); return; }
+
+  const data = {
+    dealerName: name, accessCode: code, tier,
+    contact: document.getElementById('fContact').value.trim(),
+    phone:   document.getElementById('fPhone').value.trim(),
+    email:   document.getElementById('fEmail').value.trim(),
+    startDate: document.getElementById('fStartDate').value,
+    notes:   document.getElementById('fNotes').value.trim(),
+    active:  true,
+    updatedAt: serverTimestamp()
+  };
+
+  const docId = document.getElementById('fDocId').value;
+  try {
+    if (docId) {
+      await updateDoc(doc(db, 'ess_dealers', docId), data);
+    } else {
+      data.createdAt = serverTimestamp();
+      await addDoc(collection(db, 'ess_dealers'), data);
+    }
+    closeModal();
+    await loadDealers();
+  } catch(e) { console.error(e); alert('Save failed — check console.'); }
+};
+
+window.pauseDealer = async function(id) {
+  if (!confirm('Pause this dealer subscription? They will lose access.')) return;
+  const reason = prompt('Pause reason (optional):') || '';
+  try {
+    await updateDoc(doc(db, 'ess_dealers', id), {
+      active: false,
+      pausedDate: new Date().toISOString().split('T')[0],
+      pauseReason: reason
+    });
+    await loadDealers();
+  } catch(e) { console.error(e); }
+};
+
+window.reactivateDealer = async function(id) {
+  if (!confirm('Reactivate this dealer?')) return;
+  try {
+    await updateDoc(doc(db, 'ess_dealers', id), { active: true, pausedDate: null, pauseReason: null });
+    await loadDealers();
+  } catch(e) { console.error(e); }
+};
+
+window.convertDemo = function(id, dealerName) {
+  window.openAddDealer();
+  document.getElementById('fDealerName').value = dealerName;
+  document.getElementById('fDocId').value = '';
+  // Mark demo as converted after save — handled in saveDealer flow
+};
+
+window.declineDemo = async function(id) {
+  if (!confirm('Mark this demo request as declined?')) return;
+  try {
+    await updateDoc(doc(db, 'ess_demo_requests', id), { status: 'declined' });
+    await loadDemos();
+  } catch(e) { console.error(e); }
+};
+
+window.closeModal = function() {
+  document.getElementById('dealerModal').classList.remove('active');
+};
+</script>
+
+<script>
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const ids = ['dealers','demos','inactive'];
+    t.classList.toggle('active', ids[i] === tab);
+  });
+  document.querySelectorAll('.panel').forEach(p => {
+    p.classList.toggle('active', p.id === 'panel-'+tab);
+  });
+}
+document.getElementById('dealerModal').addEventListener('click', function(e) {
+  if (e.target === this) window.closeModal();
+});
+</script>
+</body>
+</html>
