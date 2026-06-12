@@ -106,6 +106,18 @@
     transition:all .2s;width:100%;}
   .price-btn:hover,.price-btn.featured-btn{background:var(--accent);color:#000;}
 
+
+  /* DEMO STEP INDICATORS */
+  .demo-step-item{text-align:center;flex:0 0 auto;}
+  .demo-step-dot{width:28px;height:28px;border-radius:50%;background:var(--surface2);
+    border:2px solid var(--border);display:inline-flex;align-items:center;justify-content:center;
+    font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:#c8d0e0;margin-bottom:4px;}
+  .demo-step-item.active .demo-step-dot{background:rgba(232,160,32,.15);border-color:var(--accent);color:var(--accent);}
+  .demo-step-item.done .demo-step-dot{background:rgba(34,197,94,.15);border-color:var(--green);color:var(--green);}
+  .demo-step-label{font-size:11px;font-weight:700;color:#3d4460;text-transform:uppercase;letter-spacing:1px;font-family:'Barlow Condensed',sans-serif;}
+  .demo-step-item.active .demo-step-label{color:var(--accent);}
+  .demo-step-item.done .demo-step-label{color:var(--green);}
+
   /* LOGIN SECTION */
   .login-section{background:var(--surface);border-top:3px solid var(--accent);
     border-bottom:3px solid var(--accent);padding:60px 20px;}
@@ -403,40 +415,181 @@
   <div class="footer-disc">© 2026 Express Sales System. Built for dealers who close.</div>
 </footer>
 
-<!-- DEMO MODAL -->
+<!-- DEMO MODAL — 3-STEP QUALIFICATION FLOW -->
 <div class="modal-overlay" id="demoModal">
-  <div class="modal">
-    <div id="demoForm">
-      <div class="modal-title">Request a Demo</div>
-      <div class="modal-sub">Tell us about your store and we will reach out within one business day to schedule your walkthrough.</div>
-      <input class="modal-input" type="text" id="demoName" placeholder="Your Name">
-      <input class="modal-input" type="text" id="demoDealer" placeholder="Dealership Name">
-      <input class="modal-input" type="tel" id="demoPhone" placeholder="Phone Number">
-      <input class="modal-input" type="email" id="demoEmail" placeholder="Email Address">
-      <select class="modal-select" id="demoTier">
-        <option value="">— Interested Tier —</option>
-        <option>Starter — $299/mo</option>
-        <option>Professional — $599/mo</option>
-        <option>Enterprise — $999/mo</option>
-        <option>Not sure yet — just want to see it</option>
+  <div class="modal" style="max-width:560px;max-height:92vh;overflow-y:auto;">
+
+    <!-- STEP PROGRESS -->
+    <div id="demoSteps" style="display:flex;gap:0;margin-bottom:24px;border-bottom:2px solid var(--border);padding-bottom:16px;">
+      <div class="demo-step-item active" id="stepInd1">
+        <div class="demo-step-dot" id="stepDot1">1</div>
+        <div class="demo-step-label">Who You Are</div>
+      </div>
+      <div style="flex:1;height:2px;background:var(--border);margin-top:14px;"></div>
+      <div class="demo-step-item" id="stepInd2">
+        <div class="demo-step-dot" id="stepDot2">2</div>
+        <div class="demo-step-label">Your Store</div>
+      </div>
+      <div style="flex:1;height:2px;background:var(--border);margin-top:14px;"></div>
+      <div class="demo-step-item" id="stepInd3">
+        <div class="demo-step-dot" id="stepDot3">3</div>
+        <div class="demo-step-label">Schedule</div>
+      </div>
+    </div>
+
+    <!-- STEP 1 — WHO -->
+    <div id="demoStep1">
+      <div class="modal-title">Who Are You?</div>
+      <div class="modal-sub" style="margin-bottom:20px;">Tell us who we are talking to so we can tailor the walkthrough to your role.</div>
+      <input class="modal-input" type="text" id="demoName" placeholder="Your Full Name *">
+      <input class="modal-input" type="tel" id="demoPhone" placeholder="Your Cell Phone *">
+      <input class="modal-input" type="email" id="demoEmail" placeholder="Your Email Address *">
+      <select class="modal-select" id="demoRole" style="margin-bottom:14px;">
+        <option value="">— Your Role *  —</option>
+        <option>Dealer Principal / Owner</option>
+        <option>General Manager</option>
+        <option>General Sales Manager</option>
+        <option>Sales Manager / UCM</option>
+        <option>Finance Manager</option>
+        <option>BDC Manager</option>
+        <option>Other</option>
       </select>
-      <select class="modal-select" id="demoSize">
-        <option value="">— Store Size (units/month) —</option>
+      <select class="modal-select" id="demoHow" style="margin-bottom:14px;">
+        <option value="">— How Did You Find ESS? —</option>
+        <option>Referral from another dealer</option>
+        <option>Google search</option>
+        <option>LinkedIn</option>
+        <option>Dealer 20 group / association</option>
+        <option>Direct outreach from ESS</option>
+        <option>Other</option>
+      </select>
+      <button class="modal-btn" onclick="demoNext(1)">NEXT — YOUR STORE →</button>
+      <button class="modal-close" onclick="closeDemo()" style="margin-top:10px;">Cancel</button>
+    </div>
+
+    <!-- STEP 2 — WHAT / WHERE / WHY -->
+    <div id="demoStep2" style="display:none;">
+      <div class="modal-title">Your Store</div>
+      <div class="modal-sub" style="margin-bottom:20px;">Help us understand your operation so the demo speaks directly to your situation.</div>
+      <input class="modal-input" type="text" id="demoDealer" placeholder="Dealership Name *">
+      <select class="modal-select" id="demoMfg" style="margin-bottom:14px;">
+        <option value="">— Manufacturer / Brand *  —</option>
+        <option>Toyota</option><option>Ford</option><option>Chevrolet</option>
+        <option>Honda</option><option>Nissan</option><option>Hyundai</option>
+        <option>Kia</option><option>Jeep / RAM / Dodge</option><option>GMC / Buick / Cadillac</option>
+        <option>BMW / Mercedes / Audi / Lexus</option><option>Independent / Used Only</option>
+        <option>Multi-rooftop group</option><option>Other</option>
+      </select>
+      <select class="modal-select" id="demoSize" style="margin-bottom:14px;">
+        <option value="">— Monthly Volume (units sold) *  —</option>
         <option>Under 50 units</option>
         <option>50–100 units</option>
         <option>100–200 units</option>
         <option>200+ units</option>
         <option>Multi-rooftop group</option>
       </select>
-      <button class="modal-btn" onclick="submitDemo()">SUBMIT REQUEST →</button>
-      <button class="modal-close" onclick="closeDemo()">Cancel</button>
+      <select class="modal-select" id="demoPain" style="margin-bottom:14px;">
+        <option value="">— Biggest Pain Point Right Now *  —</option>
+        <option>PP / F&I penetration is too low</option>
+        <option>FM has no real-time floor visibility</option>
+        <option>EOD reporting takes too long</option>
+        <option>SP accountability and scorecards</option>
+        <option>Trade capture is inconsistent</option>
+        <option>No structured walk-around process</option>
+        <option>CVE / desk handoff is manual or missing</option>
+        <option>Multiple tools that don't talk to each other</option>
+        <option>All of the above</option>
+      </select>
+      <select class="modal-select" id="demoTier" style="margin-bottom:14px;">
+        <option value="">— Interested Tier (if you know) —</option>
+        <option>Starter — $299/mo</option>
+        <option>Professional — $599/mo</option>
+        <option>Enterprise — $999/mo</option>
+        <option>Not sure yet — just want to see it</option>
+      </select>
+      <div style="display:flex;gap:12px;">
+        <button class="modal-close" onclick="demoBack(2)" style="flex:1;">← Back</button>
+        <button class="modal-btn" onclick="demoNext(2)" style="flex:2;">NEXT — SCHEDULE →</button>
+      </div>
     </div>
-    <div class="modal-success" id="demoSuccess">
-      <div class="modal-success-icon">✅</div>
-      <div class="modal-success-title">Request Received!</div>
-      <div class="modal-success-sub">We will reach out within one business day to schedule your demo. Get ready to see what your floor looks like when everything is connected.</div>
-      <button class="modal-close" onclick="closeDemo()" style="margin-top:24px;">Close</button>
+
+    <!-- STEP 3 — WHEN / HOW -->
+    <div id="demoStep3" style="display:none;">
+      <div class="modal-title">How Do You Want<br>to See It?</div>
+      <div class="modal-sub" style="margin-bottom:20px;">Choose your preferred demo format. You will get immediate access to the interactive sandbox the moment you submit.</div>
+
+      <!-- FORMAT SELECTION -->
+      <div style="margin-bottom:20px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:900;color:#c8d0e0;text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;">Demo Format — Select All That Apply</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <label style="display:flex;gap:12px;align-items:flex-start;cursor:pointer;background:var(--card-bg);border:2px solid var(--border);border-radius:8px;padding:14px;" id="fmtLiveLabel">
+            <input type="checkbox" id="fmtLive" style="margin-top:3px;width:18px;height:18px;accent-color:var(--accent);">
+            <div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:#ffffff;text-transform:uppercase;">🎙️ Live Walkthrough Call</div>
+              <div style="font-size:14px;color:#c8d0e0;font-weight:600;margin-top:2px;">You and an ESS rep on a live Zoom or phone call. Best for GMs and dealer principals. Highest conversion — we customize the demo to your exact pain point.</div>
+            </div>
+          </label>
+          <label style="display:flex;gap:12px;align-items:flex-start;cursor:pointer;background:var(--card-bg);border:2px solid var(--border);border-radius:8px;padding:14px;" id="fmtVideoLabel">
+            <input type="checkbox" id="fmtVideo" checked style="margin-top:3px;width:18px;height:18px;accent-color:var(--accent);">
+            <div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:#ffffff;text-transform:uppercase;">🎬 Video Walkthrough</div>
+              <div style="font-size:14px;color:#c8d0e0;font-weight:600;margin-top:2px;">A 5-minute recorded walkthrough of the full platform. Watch on your own time. Share with your team. No scheduling required — available immediately after you submit.</div>
+            </div>
+          </label>
+          <label style="display:flex;gap:12px;align-items:flex-start;cursor:pointer;background:var(--card-bg);border:2px solid var(--border);border-radius:8px;padding:14px;" id="fmtSandboxLabel">
+            <input type="checkbox" id="fmtSandbox" checked style="margin-top:3px;width:18px;height:18px;accent-color:var(--accent);">
+            <div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:#ffffff;text-transform:uppercase;">⚡ Interactive Sandbox</div>
+              <div style="font-size:14px;color:#c8d0e0;font-weight:600;margin-top:2px;">Click through the live platform with a demo dealership pre-loaded. Big Board, CVE, PP Scripts, FM Floor — all live. No login required. Available immediately after you submit.</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- LIVE CALL SCHEDULING — shown when Live is checked -->
+      <div id="liveScheduleBlock" style="display:none;background:rgba(232,160,32,.05);border:1px solid rgba(232,160,32,.3);border-radius:8px;padding:16px;margin-bottom:16px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Schedule Your Live Call</div>
+        <select class="modal-select" id="demoDay" style="margin-bottom:10px;">
+          <option value="">— Preferred Day —</option>
+          <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+          <option>Thursday</option><option>Friday</option>
+          <option>Flexible — any weekday</option>
+        </select>
+        <select class="modal-select" id="demoTime" style="margin-bottom:0;">
+          <option value="">— Preferred Time —</option>
+          <option>Morning (8AM–12PM)</option>
+          <option>Afternoon (12PM–5PM)</option>
+          <option>Evening (5PM–7PM)</option>
+          <option>Flexible — whatever works</option>
+        </select>
+      </div>
+
+      <div style="display:flex;gap:12px;">
+        <button class="modal-close" onclick="demoBack(3)" style="flex:1;">← Back</button>
+        <button class="modal-btn" onclick="submitDemo()" style="flex:2;">SUBMIT — GET ACCESS NOW →</button>
+      </div>
     </div>
+
+    <!-- SUCCESS STATE -->
+    <div id="demoSuccess" style="display:none;text-align:center;padding:10px 0;">
+      <div style="font-size:64px;margin-bottom:16px;">🚀</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:900;color:var(--green);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">You're In!</div>
+      <div style="font-size:16px;color:#c8d0e0;font-weight:600;line-height:1.6;margin-bottom:24px;">Your demo request is confirmed. Here is your immediate access — no waiting.</div>
+
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px;">
+        <a href="/demo" target="_blank" id="sandboxBtn" style="background:var(--accent);color:#000;padding:14px 20px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:900;letter-spacing:1px;text-transform:uppercase;text-decoration:none;display:block;">⚡ EXPLORE LIVE SANDBOX →</a>
+        <a href="/walkthrough" target="_blank" id="videoBtn" style="background:var(--surface2);color:#ffffff;padding:14px 20px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:900;letter-spacing:1px;text-transform:uppercase;text-decoration:none;display:block;border:2px solid var(--border);">🎬 WATCH VIDEO WALKTHROUGH →</a>
+      </div>
+
+      <div id="liveConfirm" style="display:none;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);border-radius:8px;padding:14px;margin-bottom:16px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:var(--green);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">📞 Live Call Requested</div>
+        <div style="font-size:14px;color:#c8d0e0;font-weight:600;">We will confirm your live walkthrough call within 2 hours during business hours. Check your phone and email.</div>
+      </div>
+
+      <div style="font-size:13px;color:#3d4460;font-weight:600;margin-bottom:16px;">Reference: <span id="demoRef" style="color:#c8d0e0;">ESS-DEMO-000000</span></div>
+      <button class="modal-close" onclick="closeDemo()">Close</button>
+    </div>
+
   </div>
 </div>
 
@@ -490,28 +643,107 @@ window.doLogin = async function() {
   }
 };
 
+// ── DEMO STEP NAVIGATION ──
+window.demoNext = function(step) {
+  if (step === 1) {
+    const name  = document.getElementById('demoName').value.trim();
+    const phone = document.getElementById('demoPhone').value.trim();
+    const email = document.getElementById('demoEmail').value.trim();
+    const role  = document.getElementById('demoRole').value;
+    if (!name || !phone || !email || !role) { alert('Please complete all required fields.'); return; }
+    document.getElementById('demoStep1').style.display = 'none';
+    document.getElementById('demoStep2').style.display = 'block';
+    document.getElementById('stepInd1').classList.remove('active');
+    document.getElementById('stepInd1').classList.add('done');
+    document.getElementById('stepDot1').textContent = '✓';
+    document.getElementById('stepInd2').classList.add('active');
+  } else if (step === 2) {
+    const dealer = document.getElementById('demoDealer').value.trim();
+    const size   = document.getElementById('demoSize').value;
+    const pain   = document.getElementById('demoPain').value;
+    const mfg    = document.getElementById('demoMfg').value;
+    if (!dealer || !size || !pain || !mfg) { alert('Please complete all required fields.'); return; }
+    document.getElementById('demoStep2').style.display = 'none';
+    document.getElementById('demoStep3').style.display = 'block';
+    document.getElementById('stepInd2').classList.remove('active');
+    document.getElementById('stepInd2').classList.add('done');
+    document.getElementById('stepDot2').textContent = '✓';
+    document.getElementById('stepInd3').classList.add('active');
+  }
+};
+
+window.demoBack = function(step) {
+  if (step === 2) {
+    document.getElementById('demoStep2').style.display = 'none';
+    document.getElementById('demoStep1').style.display = 'block';
+    document.getElementById('stepInd2').classList.remove('active');
+    document.getElementById('stepInd1').classList.remove('done');
+    document.getElementById('stepInd1').classList.add('active');
+    document.getElementById('stepDot1').textContent = '1';
+  } else if (step === 3) {
+    document.getElementById('demoStep3').style.display = 'none';
+    document.getElementById('demoStep2').style.display = 'block';
+    document.getElementById('stepInd3').classList.remove('active');
+    document.getElementById('stepInd2').classList.remove('done');
+    document.getElementById('stepInd2').classList.add('active');
+    document.getElementById('stepDot2').textContent = '2';
+  }
+};
+
+// Live checkbox toggle
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('fmtLive').addEventListener('change', function() {
+    document.getElementById('liveScheduleBlock').style.display = this.checked ? 'block' : 'none';
+  });
+});
+
 // ── DEMO REQUEST — save to Firebase ──
 window.submitDemo = async function() {
-  const name   = document.getElementById('demoName').value.trim();
-  const dealer = document.getElementById('demoDealer').value.trim();
-  const phone  = document.getElementById('demoPhone').value.trim();
-  const email  = document.getElementById('demoEmail').value.trim();
+  const wantLive    = document.getElementById('fmtLive').checked;
+  const wantVideo   = document.getElementById('fmtVideo').checked;
+  const wantSandbox = document.getElementById('fmtSandbox').checked;
 
-  if (!name || !dealer || !phone || !email) {
-    alert('Please fill in all required fields.');
+  if (!wantLive && !wantVideo && !wantSandbox) {
+    alert('Please select at least one demo format.');
     return;
   }
 
+  const formats = [];
+  if (wantLive)    formats.push('Live Walkthrough Call');
+  if (wantVideo)   formats.push('Video Walkthrough');
+  if (wantSandbox) formats.push('Interactive Sandbox');
+
   try {
     await addDoc(collection(db, 'ess_demo_requests'), {
-      name, dealer, phone, email,
-      tier: document.getElementById('demoTier').value,
-      size: document.getElementById('demoSize').value,
+      name:    document.getElementById('demoName').value.trim(),
+      dealer:  document.getElementById('demoDealer').value.trim(),
+      phone:   document.getElementById('demoPhone').value.trim(),
+      email:   document.getElementById('demoEmail').value.trim(),
+      role:    document.getElementById('demoRole').value,
+      how:     document.getElementById('demoHow').value,
+      mfg:     document.getElementById('demoMfg').value,
+      size:    document.getElementById('demoSize').value,
+      pain:    document.getElementById('demoPain').value,
+      tier:    document.getElementById('demoTier').value,
+      formats: formats,
+      liveDay:  wantLive ? document.getElementById('demoDay').value : '',
+      liveTime: wantLive ? document.getElementById('demoTime').value : '',
       submittedAt: serverTimestamp(),
       status: 'new'
     });
-    document.getElementById('demoForm').style.display = 'none';
+
+    // Generate ref number
+    const ref = 'ESS-DEMO-' + Math.floor(100000 + Math.random() * 900000);
+    document.getElementById('demoRef').textContent = ref;
+
+    // Show/hide live confirm
+    if (wantLive) document.getElementById('liveConfirm').style.display = 'block';
+
+    // Hide steps, show success
+    document.getElementById('demoSteps').style.display = 'none';
+    document.getElementById('demoStep3').style.display = 'none';
     document.getElementById('demoSuccess').style.display = 'block';
+
   } catch(e) {
     console.error(e);
     alert('Submission error — please try again or call us directly.');
