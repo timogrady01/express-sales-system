@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESS Walkthrough — Express Sales System</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0c10;--surface:#12151d;--surface2:#1a1e28;--border:#3d4460;
+    --card-bg:#181c28;--accent:#e8a020;--green:#22c55e;--red:#ef4444;
+    --blue:#3b82f6;--text:#eceef5;--radius:10px;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;}
+
+  /* NAV */
+  nav{background:#0d0f14;border-bottom:3px solid var(--accent);padding:0 32px;height:72px;
+    display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+  .nav-logo{font-family:'Barlow Condensed',sans-serif;font-size:38px;font-weight:900;
+    color:var(--accent);letter-spacing:3px;text-decoration:none;}
+  .nav-right{display:flex;gap:16px;align-items:center;}
+  .nav-link{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;
+    color:#ffffff;text-decoration:none;letter-spacing:1px;text-transform:uppercase;}
+  .nav-cta{background:var(--accent);color:#000;padding:9px 20px;border-radius:6px;
+    font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;
+    letter-spacing:1px;text-transform:uppercase;text-decoration:none;}
+
+  /* HERO */
+  .hero{background:linear-gradient(135deg,#1a1000,#0a0c10);border-bottom:3px solid var(--accent);
+    padding:60px 20px 48px;text-align:center;}
+  .hero-badge{display:inline-block;border:2px solid var(--accent);color:var(--accent);
+    font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;
+    letter-spacing:3px;padding:8px 24px;border-radius:20px;margin-bottom:16px;
+    text-transform:uppercase;background:rgba(232,160,32,.08);}
+  .hero-h1{font-family:'Barlow Condensed',sans-serif;font-size:72px;font-weight:900;
+    color:#ffffff;text-transform:uppercase;line-height:1;margin-bottom:12px;letter-spacing:2px;}
+  .hero-h1 span{color:var(--accent);}
+  .hero-sub{font-size:20px;color:#c8d0e0;font-weight:600;max-width:580px;
+    margin:0 auto 32px;line-height:1.6;}
+  .hero-meta{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;}
+  .hero-meta-item{display:flex;align-items:center;gap:8px;font-family:'Barlow Condensed',sans-serif;
+    font-size:17px;font-weight:700;color:#c8d0e0;letter-spacing:1px;text-transform:uppercase;}
+  .hero-meta-item span{color:var(--accent);}
+
+  /* WRAP */
+  .wrap{max-width:900px;margin:0 auto;padding:48px 20px 80px;}
+
+  /* VIDEO PLAYER AREA */
+  .video-wrap{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);
+    overflow:hidden;margin-bottom:32px;position:relative;}
+  .video-placeholder{background:linear-gradient(135deg,#0d0f14,#1a1e28);
+    aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;cursor:pointer;position:relative;}
+  .video-placeholder:hover .play-btn{transform:scale(1.08);}
+  .play-btn{width:90px;height:90px;background:var(--accent);border-radius:50%;
+    display:flex;align-items:center;justify-content:center;margin-bottom:20px;
+    transition:transform .2s;flex-shrink:0;}
+  .play-icon{width:0;height:0;border-top:22px solid transparent;
+    border-bottom:22px solid transparent;border-left:36px solid #000;margin-left:6px;}
+  .video-title{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;
+    color:#ffffff;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;}
+  .video-duration{font-size:15px;color:#c8d0e0;font-weight:600;}
+  .video-coming{font-size:14px;color:var(--accent);font-weight:700;margin-top:8px;
+    letter-spacing:1px;text-transform:uppercase;font-family:'Barlow Condensed',sans-serif;}
+
+  /* CHAPTER LIST */
+  .chapters-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;
+    color:#ffffff;text-transform:uppercase;letter-spacing:2px;margin-bottom:16px;}
+  .chapter-list{display:flex;flex-direction:column;gap:10px;margin-bottom:40px;}
+  .chapter{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);
+    padding:16px 20px;display:flex;gap:16px;align-items:flex-start;cursor:pointer;
+    transition:border-color .2s;}
+  .chapter:hover{border-color:var(--accent);}
+  .chapter.active{border-color:var(--accent);background:rgba(232,160,32,.04);}
+  .chapter-num{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;
+    color:var(--accent);flex-shrink:0;width:32px;}
+  .chapter-body{flex:1;}
+  .chapter-name{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;
+    color:#ffffff;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+  .chapter-desc{font-size:14px;color:#c8d0e0;font-weight:600;line-height:1.5;}
+  .chapter-time{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;
+    color:#3d4460;flex-shrink:0;margin-top:2px;}
+
+  /* KEY MOMENTS */
+  .moments-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:40px;}
+  .moment-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);
+    padding:20px;text-align:center;}
+  .moment-icon{font-size:32px;margin-bottom:10px;}
+  .moment-time{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;
+    color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+  .moment-label{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;
+    color:#ffffff;text-transform:uppercase;margin-bottom:6px;}
+  .moment-desc{font-size:13px;color:#c8d0e0;font-weight:600;line-height:1.5;}
+
+  /* WHAT YOU WILL SEE */
+  .see-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:40px;}
+  .see-item{display:flex;gap:12px;align-items:flex-start;background:var(--surface);
+    border:1px solid var(--border);border-radius:8px;padding:14px;}
+  .see-check{color:var(--green);font-size:18px;flex-shrink:0;margin-top:1px;}
+  .see-text{font-size:15px;color:#ffffff;font-weight:600;line-height:1.5;}
+
+  /* SHARE SECTION */
+  .share-card{background:rgba(232,160,32,.05);border:2px solid rgba(232,160,32,.25);
+    border-radius:var(--radius);padding:28px;margin-bottom:40px;text-align:center;}
+  .share-title{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;
+    color:#ffffff;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;}
+  .share-sub{font-size:16px;color:#c8d0e0;font-weight:600;margin-bottom:20px;line-height:1.5;}
+  .share-url{background:var(--bg);border:2px solid var(--border);border-radius:8px;
+    padding:12px 18px;font-family:monospace;font-size:16px;color:var(--accent);
+    letter-spacing:1px;margin-bottom:14px;word-break:break-all;}
+  .copy-btn{background:var(--surface2);color:#ffffff;border:2px solid var(--border);
+    padding:10px 24px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;
+    font-size:17px;font-weight:900;cursor:pointer;letter-spacing:1px;text-transform:uppercase;}
+  .copy-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .copy-btn.copied{border-color:var(--green);color:var(--green);}
+
+  /* CTA SECTION */
+  .cta-section{background:var(--surface);border:2px solid var(--accent);border-radius:var(--radius);
+    padding:36px;text-align:center;}
+  .cta-title{font-family:'Barlow Condensed',sans-serif;font-size:42px;font-weight:900;
+    color:#ffffff;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;line-height:1.1;}
+  .cta-title span{color:var(--accent);}
+  .cta-sub{font-size:17px;color:#c8d0e0;font-weight:600;margin-bottom:24px;line-height:1.6;}
+  .cta-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+  .cta-btn-primary{background:var(--accent);color:#000;padding:14px 36px;border-radius:8px;
+    font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;
+    letter-spacing:2px;text-transform:uppercase;text-decoration:none;border:none;cursor:pointer;}
+  .cta-btn-primary:hover{opacity:.9;}
+  .cta-btn-secondary{background:transparent;color:#ffffff;padding:14px 36px;border-radius:8px;
+    border:2px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-size:22px;
+    font-weight:900;letter-spacing:2px;text-transform:uppercase;text-decoration:none;cursor:pointer;}
+  .cta-btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
+
+  /* FOOTER */
+  footer{background:var(--surface);border-top:2px solid var(--border);padding:28px;text-align:center;}
+  .footer-logo{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;
+    color:var(--accent);letter-spacing:3px;margin-bottom:8px;}
+  .footer-disc{font-size:13px;color:#3d4460;font-weight:600;}
+
+  /* PAIN POINT CALLOUTS */
+  .pain-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:40px;}
+  .pain-card{background:var(--surface);border-left:4px solid var(--accent);
+    border-radius:0 var(--radius) var(--radius) 0;padding:16px 18px;}
+  .pain-label{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:900;
+    color:var(--accent);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;}
+  .pain-text{font-size:14px;color:#ffffff;font-weight:600;line-height:1.5;}
+
+  /* SECTION DIVIDER */
+  .section-divider{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:900;
+    color:#3d4460;text-transform:uppercase;letter-spacing:4px;margin-bottom:16px;
+    padding-bottom:10px;border-bottom:1px solid var(--border);}
+
+  @media(max-width:640px){
+    .hero-h1{font-size:48px;}
+    .moments-grid{grid-template-columns:1fr;}
+    .see-grid{grid-template-columns:1fr;}
+    .pain-strip{grid-template-columns:1fr;}
+    .cta-btns{flex-direction:column;}
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/login.html" class="nav-logo">ESS</a>
+  <div class="nav-right">
+    <a href="/demo.html" class="nav-link">Live Sandbox</a>
+    <a href="/login.html#pricing" class="nav-link">Pricing</a>
+    <a href="/login.html#login" class="nav-cta">Dealer Login</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">🎬 5-Minute Platform Walkthrough</div>
+  <h1 class="hero-h1">SEE ESS IN<br><span>5 MINUTES.</span></h1>
+  <p class="hero-sub">Watch the full platform from Big Board to CVE to PP Scripts to UCM Dashboard. No fluff — just the tools, what they do, and why they matter on your floor.</p>
+  <div class="hero-meta">
+    <div class="hero-meta-item">⏱️ <span>5 min</span> runtime</div>
+    <div class="hero-meta-item">📱 <span>Mobile</span> friendly</div>
+    <div class="hero-meta-item">🔗 <span>Shareable</span> link</div>
+    <div class="hero-meta-item">🔓 <span>No login</span> required</div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- VIDEO PLAYER -->
+  <div class="video-wrap">
+    <div class="video-placeholder" id="videoPlayer" onclick="handlePlay()">
+      <div class="play-btn"><div class="play-icon"></div></div>
+      <div class="video-title">ESS Platform Walkthrough</div>
+      <div class="video-duration">Full platform tour · 5 minutes</div>
+      <div class="video-coming">▶ Click to watch — or explore the live sandbox below</div>
+    </div>
+    <!-- When video is ready, replace placeholder with: -->
+    <!-- <iframe src="YOUR_VIDEO_URL" frameborder="0" allowfullscreen style="width:100%;aspect-ratio:16/9;display:block;"></iframe> -->
+  </div>
+
+  <!-- WHAT PAIN POINTS THIS ADDRESSES -->
+  <div class="section-divider">This walkthrough answers three questions dealers ask most</div>
+  <div class="pain-strip">
+    <div class="pain-card">
+      <div class="pain-label">Pain Point 1</div>
+      <div class="pain-text">"My PP penetration is inconsistent — some SPs sell it, most don't." ESS puts the script in every SP's hand at exactly the right moment.</div>
+    </div>
+    <div class="pain-card">
+      <div class="pain-label">Pain Point 2</div>
+      <div class="pain-text">"I don't know what's happening on my floor until end of day." The FM Floor and Big Board update in real time — you see everything as it happens.</div>
+    </div>
+    <div class="pain-card">
+      <div class="pain-label">Pain Point 3</div>
+      <div class="pain-text">"EOD reporting takes 30 minutes and it's still inaccurate." ESS EOD Bulk Entry with CarWars CSV import takes 5 minutes. Done.</div>
+    </div>
+  </div>
+
+  <!-- CHAPTERS -->
+  <div class="section-divider">Walkthrough chapters — jump to what matters most</div>
+  <div class="chapters-title">📋 What's Covered</div>
+  <div class="chapter-list">
+    <div class="chapter active" onclick="jumpTo(0)">
+      <div class="chapter-num">01</div>
+      <div class="chapter-body">
+        <div class="chapter-name">The Big Board — Store Scoreboard</div>
+        <div class="chapter-desc">Live MTD units, EOM projection, avg front end gross, SP performance table ranked best to worst, walk reasons, benchmark calculator. Everything your FM needs in one view.</div>
+      </div>
+      <div class="chapter-time">0:00</div>
+    </div>
+    <div class="chapter" onclick="jumpTo(1)">
+      <div class="chapter-num">02</div>
+      <div class="chapter-body">
+        <div class="chapter-name">FM Floor — Real-Time SP Status</div>
+        <div class="chapter-desc">Every SP on the floor in live status — available, with customer, BDC/phone, break. Customer log with visit type and time. The FM sees the whole floor without leaving their desk.</div>
+      </div>
+      <div class="chapter-time">0:48</div>
+    </div>
+    <div class="chapter" onclick="jumpTo(2)">
+      <div class="chapter-num">03</div>
+      <div class="chapter-body">
+        <div class="chapter-name">Greeter Station — Customer Check-In</div>
+        <div class="chapter-desc">Every customer logged at point of entry — appointment, walk-in, be-back, service. SP assigned. Visit counts feed the Big Board in real time.</div>
+      </div>
+      <div class="chapter-time">1:22</div>
+    </div>
+    <div class="chapter" onclick="jumpTo(3)">
+      <div class="chapter-num">04</div>
+      <div class="chapter-body">
+        <div class="chapter-name">CVE — Customer Vehicle Evaluation</div>
+        <div class="chapter-desc">The most important tool. A 5-step guided SP workflow — VIN lookup, customer Q&A, 13-point walk-around, PP hooks, commitment close. Submits to Firebase. This is what turns the trade walk into a PP sale.</div>
+      </div>
+      <div class="chapter-time">1:55</div>
+    </div>
+    <div class="chapter" onclick="jumpTo(4)">
+      <div class="chapter-num">05</div>
+      <div class="chapter-body">
+        <div class="chapter-name">PP Scripts — Walk, Desk, Objections, Close</div>
+        <div class="chapter-desc">Every script your SP needs — the walk-around hooks, the desk intro, every objection handled, four closes including the Liar's Trap. In the SP's hand on their phone, real time.</div>
+      </div>
+      <div class="chapter-time">2:58</div>
+    </div>
+    <div class="chapter" onclick="jumpTo(5)">
+      <div class="chapter-num">06</div>
+      <div class="chapter-body">
+        <div class="chapter-name">EOD Bulk Entry — CarWars + Covideo CSV</div>
+        <div class="chapter-desc">Import CarWars outbound call data and Covideo video engagement data via CSV. Add daily gross per SP. MTD tracking and EOM projection update automatically. 5 minutes instead of 30.</div>
+      </div>
+      <div class="chapter-time">3:44</div>
+    </div>
+    <div class="chapter" onclick="jumpTo(6)">
+      <div class="chapter-num">07</div>
+      <div class="chapter-body">
+        <div class="chapter-name">UCM Dashboard — Manager Live Monitor</div>
+        <div class="chapter-desc">PIN-protected manager view of all CVE submissions. PP temperature counts — YES / SOMEWHAT / HESITANT — at a glance. See every trade the SP walked and what PP temperature they got. Know before the desk.</div>
+      </div>
+      <div class="chapter-time">4:28</div>
+    </div>
+  </div>
+
+  <!-- KEY MOMENTS -->
+  <div class="section-divider">Three moments that close the sale</div>
+  <div class="moments-grid">
+    <div class="moment-card">
+      <div class="moment-icon">🎯</div>
+      <div class="moment-time">1:55 — Chapter 4</div>
+      <div class="moment-label">The CVE PP Hook</div>
+      <div class="moment-desc">Watch the SP complete a real walk-around and capture a PP YES that gets routed directly to the UCM dashboard before they even reach the desk.</div>
+    </div>
+    <div class="moment-card">
+      <div class="moment-icon">🔒</div>
+      <div class="moment-time">3:20 — Chapter 5</div>
+      <div class="moment-label">The Liar's Trap Close</div>
+      <div class="moment-desc">The most powerful close in the PP script library. Watch how it works — and why a customer cannot say no without contradicting themselves.</div>
+    </div>
+    <div class="moment-card">
+      <div class="moment-icon">📊</div>
+      <div class="moment-time">4:28 — Chapter 7</div>
+      <div class="moment-label">UCM Gets the Alert</div>
+      <div class="moment-desc">The SP submits the CVE. The UCM dashboard updates in real time. The manager knows the PP temperature before the customer sits down at the desk.</div>
+    </div>
+  </div>
+
+  <!-- WHAT YOU WILL SEE -->
+  <div class="section-divider">Everything covered in this walkthrough</div>
+  <div class="see-grid">
+    <div class="see-item"><div class="see-check">✓</div><div class="see-text">Big Board live scorecard — units, gross, SP rankings, walk reasons</div></div>
+    <div class="see-item"><div class="see-check">✓</div><div class="see-text">FM Floor real-time SP status tracking</div></div>
+    <div class="see-item"><div class="see-check">✓</div><div class="see-text">Greeter Station customer check-in flow</div></div>
+    <div class="see-item"><div class="see-check">✓</div><div class="see-text">CVE 5-step SP workflow — VIN to commitment close</div></div>
+    <div class="see-item"><div class="see-check">✓</div><div class="see-text">PP Scripts — walk hooks, desk intro, objection handlers, 4 closes</div></div>
+    <div class="see-item"><div class="see-check">✓</div><div class="see-text">EOD CarWars + Covideo CSV import — 5-minute daily entry</div></div>
+    <div class="see-item"><div class="see-check">✓</div><div class="see-text">UCM Dashboard — live CVE monitor with PP temperature</div></div>
+    <div class="see-item"><div class="see-check">✓</div><div class="see-text">Firebase real-time sync across all devices</div></div>
+    <div class="see-item"><div class="see-check">✓</div><div class="see-text">Mobile-responsive — works on phone, tablet, desktop</div></div>
+    <div class="see-item"><div class="see-check">✓</div><div class="see-text">PIN-protected manager areas — SPs see what they need, nothing more</div></div>
+  </div>
+
+  <!-- SHARE SECTION -->
+  <div class="share-card">
+    <div class="share-title">📤 Share This Walkthrough</div>
+    <div class="share-sub">Send this link to your GM, dealer principal, or sales management team. No login required — they can watch anywhere, anytime.</div>
+    <div class="share-url" id="shareUrl">https://www.expresssalessystem.com/walkthrough.html</div>
+    <button class="copy-btn" id="copyBtn" onclick="copyLink()">📋 Copy Link</button>
+  </div>
+
+  <!-- EXPLORE SANDBOX CTA -->
+  <div style="background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);
+    padding:24px;margin-bottom:24px;display:flex;justify-content:space-between;
+    align-items:center;flex-wrap:wrap;gap:16px;">
+    <div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;
+        color:#ffffff;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">
+        ⚡ Want to Click Through It Yourself?
+      </div>
+      <div style="font-size:15px;color:#c8d0e0;font-weight:600;">
+        The live sandbox has a full demo dealership pre-loaded. Every tool, real data, no login.
+      </div>
+    </div>
+    <a href="/demo.html" style="background:var(--surface2);color:#ffffff;padding:12px 28px;
+      border-radius:8px;border:2px solid var(--accent);font-family:'Barlow Condensed',sans-serif;
+      font-size:19px;font-weight:900;letter-spacing:1px;text-transform:uppercase;text-decoration:none;
+      white-space:nowrap;">EXPLORE SANDBOX →</a>
+  </div>
+
+  <!-- FINAL CTA -->
+  <div class="cta-section">
+    <div class="cta-title">READY TO PUT<br><span>ESS ON YOUR FLOOR?</span></div>
+    <div class="cta-sub">No setup fees. No contracts. Onboarded in 24 hours. Your team will use it on day one.</div>
+    <div class="cta-btns">
+      <a href="/login.html" onclick="setTimeout(()=>openDemo&&openDemo(),400);return true;" class="cta-btn-primary">REQUEST A LIVE DEMO</a>
+      <a href="/login.html#pricing" class="cta-btn-secondary">VIEW PRICING</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">ESS</div>
+  <div style="font-size:15px;color:#c8d0e0;font-weight:600;margin-bottom:8px;">Express Sales System — Built for dealers who close.</div>
+  <div class="footer-disc">© 2026 Express Sales System. All rights reserved.</div>
+</footer>
+
+<script>
+// Chapter selection
+function jumpTo(idx) {
+  document.querySelectorAll('.chapter').forEach((c,i) => {
+    c.classList.toggle('active', i===idx);
+  });
+  // When video is live, seek to timestamp here
+  console.log('Jump to chapter', idx);
+}
+
+// Video play handler
+function handlePlay() {
+  // When video URL is ready, swap the placeholder for an iframe
+  // For now show a message
+  const player = document.getElementById('videoPlayer');
+  player.innerHTML = `
+    <div style="padding:60px 30px;text-align:center;">
+      <div style="font-size:56px;margin-bottom:16px;">🎬</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;
+        color:#ffffff;text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;">
+        Video Coming Shortly
+      </div>
+      <div style="font-size:16px;color:#c8d0e0;font-weight:600;max-width:400px;
+        margin:0 auto 24px;line-height:1.6;">
+        The recorded walkthrough is being finalized. In the meantime, explore the fully interactive 
+        live sandbox — it covers everything the video would show you.
+      </div>
+      <a href="/demo.html" style="background:var(--accent);color:#000;padding:12px 28px;
+        border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:20px;
+        font-weight:900;letter-spacing:1px;text-transform:uppercase;text-decoration:none;
+        display:inline-block;">⚡ EXPLORE LIVE SANDBOX →</a>
+    </div>
+  `;
+}
+
+// Copy link
+function copyLink() {
+  const url = document.getElementById('shareUrl').textContent;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✅ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '📋 Copy Link';
+      btn.classList.remove('copied');
+    }, 2500);
+  }).catch(() => {
+    // Fallback
+    const el = document.createElement('textarea');
+    el.value = url;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    document.getElementById('copyBtn').textContent = '✅ Copied!';
+  });
+}
+</script>
+</body>
+</html>
