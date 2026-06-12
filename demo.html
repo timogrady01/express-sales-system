@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESS Live Demo — Prestige Ford McKinney</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0c10;--surface:#12151d;--surface2:#1a1e28;--border:#3d4460;
+    --card-bg:#181c28;--accent:#e8a020;--green:#22c55e;--red:#ef4444;
+    --blue:#3b82f6;--text:#eceef5;--radius:10px;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;padding-top:72px;padding-bottom:60px;}
+
+  /* DEMO BANNER */
+  .demo-banner{position:fixed;bottom:0;left:0;right:0;background:rgba(232,160,32,.95);
+    color:#000;text-align:center;padding:10px 20px;z-index:9999;
+    font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;
+    letter-spacing:1px;display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;}
+  .demo-banner a{background:#000;color:var(--accent);padding:6px 18px;border-radius:6px;
+    font-size:15px;font-weight:900;text-decoration:none;letter-spacing:1px;white-space:nowrap;}
+
+  /* NAV */
+  #ess-nav{position:fixed;top:0;left:0;right:0;background:#0d0f14;border-bottom:3px solid var(--accent);
+    display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:999;height:72px;}
+  .nav-logo{font-family:'Barlow Condensed',sans-serif;font-size:38px;font-weight:900;
+    color:var(--accent);letter-spacing:3px;text-decoration:none;}
+  .nav-dealer{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;
+    color:#ffffff;letter-spacing:1px;text-transform:uppercase;}
+  .nav-links{display:flex;gap:4px;align-items:center;}
+  .nav-links a{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;
+    color:#ffffff;text-decoration:none;letter-spacing:1px;text-transform:uppercase;
+    padding:6px 12px;border-radius:6px;border:2px solid transparent;white-space:nowrap;}
+  .nav-links a:hover,.nav-links a.active{color:var(--accent);border-color:var(--accent);}
+  .nav-links a.nt{color:var(--green);border-color:var(--green);}
+  #nav-toggle{display:none;background:none;border:2px solid var(--border);border-radius:6px;
+    color:var(--accent);font-size:24px;padding:4px 10px;cursor:pointer;}
+  #nav-drawer{display:none;position:fixed;top:72px;left:0;right:0;background:#0d0f14;
+    border-bottom:3px solid var(--accent);z-index:998;padding:10px 14px 14px;flex-direction:column;gap:6px;}
+  #nav-drawer.open{display:flex;}
+  #nav-drawer a{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;
+    color:#ffffff;text-decoration:none;padding:12px 16px;border-radius:7px;
+    border:2px solid var(--border);letter-spacing:1px;text-transform:uppercase;}
+  #nav-drawer a:hover{color:var(--accent);border-color:var(--accent);}
+  .nav-div{width:2px;height:24px;background:var(--border);flex-shrink:0;margin:0 2px;}
+
+  /* PANELS */
+  .panel{display:none;max-width:1060px;margin:0 auto;padding:24px 16px;}
+  .panel.active{display:block;}
+
+  /* SECTION LABEL */
+  .slabel{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:900;
+    color:var(--accent);text-transform:uppercase;letter-spacing:3px;margin-bottom:6px;}
+  .stitle{font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:900;
+    color:#ffffff;text-transform:uppercase;letter-spacing:1px;margin-bottom:20px;}
+
+  /* STAT CARDS */
+  .stat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:24px;}
+  .stat-box{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);
+    padding:16px;text-align:center;}
+  .stat-num{font-family:'Barlow Condensed',sans-serif;font-size:40px;font-weight:900;color:var(--accent);}
+  .stat-lbl{font-size:12px;color:#c8d0e0;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+  .stat-sub{font-size:12px;color:#3d4460;font-weight:600;margin-top:2px;}
+
+  /* BIG BOARD TABLE */
+  .bb-table-wrap{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:20px;}
+  .bb-table-head{background:var(--surface2);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;}
+  .bb-table-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;
+    color:#ffffff;text-transform:uppercase;letter-spacing:2px;}
+  table{width:100%;border-collapse:collapse;}
+  th{background:var(--surface2);color:#c8d0e0;font-family:'Barlow Condensed',sans-serif;
+    font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:1px;
+    padding:10px 12px;text-align:left;border-bottom:2px solid var(--border);}
+  td{padding:12px 12px;border-bottom:1px solid var(--border);font-size:14px;
+    color:var(--text);font-weight:600;vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:rgba(255,255,255,.02);}
+  .sp-name{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:#ffffff;}
+  .badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:900;
+    letter-spacing:1px;text-transform:uppercase;font-family:'Barlow Condensed',sans-serif;}
+  .badge-green{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3);}
+  .badge-gold{background:rgba(232,160,32,.15);color:var(--accent);border:1px solid rgba(232,160,32,.3);}
+  .badge-red{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3);}
+  .badge-blue{background:rgba(59,130,246,.15);color:var(--blue);border:1px solid rgba(59,130,246,.3);}
+  .badge-gray{background:rgba(255,255,255,.06);color:#c8d0e0;border:1px solid var(--border);}
+  .num-green{color:var(--green);font-weight:900;}
+  .num-gold{color:var(--accent);font-weight:900;}
+  .num-red{color:var(--red);font-weight:900;}
+
+  /* FM FLOOR CARDS */
+  .floor-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+  .sp-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);padding:18px;}
+  .sp-card.with-cust{border-color:var(--accent);}
+  .sp-card.available{border-color:var(--green);}
+  .sp-card.bdc{border-color:var(--blue);}
+  .sp-card-name{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;
+    color:#ffffff;margin-bottom:6px;}
+  .sp-card-status{font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+  .sp-card-detail{font-size:13px;color:#c8d0e0;font-weight:600;line-height:1.5;}
+
+  /* CVE SUBMISSIONS */
+  .cve-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);
+    padding:20px;margin-bottom:14px;}
+  .cve-header{display:flex;justify-content:space-between;align-items:flex-start;
+    margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+  .cve-vehicle{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:#ffffff;}
+  .cve-sp{font-size:14px;color:#c8d0e0;font-weight:600;margin-top:2px;}
+  .cve-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px;}
+  .cve-stat{background:var(--bg);border:1px solid var(--border);border-radius:8px;
+    padding:10px;text-align:center;}
+  .cve-stat-val{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:#ffffff;}
+  .cve-stat-lbl{font-size:11px;color:#c8d0e0;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+  .pp-temp{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;
+    font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;letter-spacing:1px;}
+  .pp-yes{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3);}
+  .pp-somewhat{background:rgba(232,160,32,.15);color:var(--accent);border:1px solid rgba(232,160,32,.3);}
+  .pp-hesitant{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3);}
+
+  /* GREETER */
+  .visit-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);
+    padding:16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+  .visit-name{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:#ffffff;}
+  .visit-detail{font-size:13px;color:#c8d0e0;font-weight:600;margin-top:3px;}
+
+  /* PP SCRIPTS PREVIEW */
+  .script-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);
+    padding:20px;margin-bottom:14px;}
+  .script-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;
+    color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+  .script-label{font-size:12px;font-weight:900;color:#3d4460;text-transform:uppercase;
+    letter-spacing:2px;margin-bottom:6px;font-family:'Barlow Condensed',sans-serif;}
+  .script-text{font-size:15px;color:#ffffff;font-weight:600;line-height:1.7;
+    border-left:3px solid var(--accent);padding-left:14px;font-style:italic;}
+
+  /* EOD TABLE */
+  .eod-header{display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+  .team-badge{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:900;
+    padding:5px 14px;border-radius:6px;letter-spacing:1px;text-transform:uppercase;}
+  .team-a{background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);}
+  .team-b{background:rgba(59,130,246,.1);color:var(--blue);border:1px solid rgba(59,130,246,.2);}
+  .team-c{background:rgba(232,160,32,.1);color:var(--accent);border:1px solid rgba(232,160,32,.2);}
+
+  /* SANDBOX NOTE */
+  .sandbox-note{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.25);
+    border-radius:8px;padding:14px 18px;margin-bottom:20px;font-size:14px;
+    color:#c8d0e0;font-weight:600;line-height:1.5;}
+  .sandbox-note strong{color:var(--blue);}
+
+  @media(max-width:900px){
+    .stat-grid{grid-template-columns:repeat(3,1fr);}
+    .floor-grid{grid-template-columns:repeat(2,1fr);}
+    .cve-grid{grid-template-columns:repeat(2,1fr);}
+    .nav-links{display:none;}
+    #nav-toggle{display:block;}
+  }
+  @media(max-width:500px){
+    .stat-grid{grid-template-columns:repeat(2,1fr);}
+    .floor-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div id="ess-nav">
+  <a href="/login.html" class="nav-logo">ESS</a>
+  <div class="nav-dealer" id="navDealer">Prestige Ford McKinney <span style="color:var(--accent);font-size:13px;margin-left:6px;border:1px solid rgba(232,160,32,.4);padding:2px 8px;border-radius:4px;">DEMO</span></div>
+  <div class="nav-links">
+    <a href="#" class="active" onclick="showPanel('board');return false;">🏆 Big Board</a>
+    <div class="nav-div"></div>
+    <a href="#" onclick="showPanel('floor');return false;">📋 FM Floor</a>
+    <a href="#" onclick="showPanel('greeter');return false;">👋 Greeter</a>
+    <div class="nav-div"></div>
+    <a href="#" class="nt" onclick="showPanel('cve');return false;">🚗 CVE</a>
+    <a href="#" onclick="showPanel('scripts');return false;">🪝 PP Scripts</a>
+    <div class="nav-div"></div>
+    <a href="#" onclick="showPanel('eod');return false;">📊 EOD</a>
+    <a href="#" onclick="showPanel('ucm');return false;">🔐 UCM</a>
+  </div>
+  <button id="nav-toggle" onclick="document.getElementById('nav-drawer').classList.toggle('open')">☰</button>
+</div>
+<div id="nav-drawer">
+  <a href="#" onclick="showPanel('board');return false;">🏆 Big Board</a>
+  <a href="#" onclick="showPanel('floor');return false;">📋 FM Floor</a>
+  <a href="#" onclick="showPanel('greeter');return false;">👋 Greeter</a>
+  <a href="#" onclick="showPanel('cve');return false;">🚗 CVE Submissions</a>
+  <a href="#" onclick="showPanel('scripts');return false;">🪝 PP Scripts</a>
+  <a href="#" onclick="showPanel('eod');return false;">📊 EOD Entry</a>
+  <a href="#" onclick="showPanel('ucm');return false;">🔐 UCM Dashboard</a>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- BIG BOARD -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="panel active" id="panel-board">
+  <div class="sandbox-note"><strong>📍 LIVE SANDBOX DEMO</strong> — You are viewing a fully functional demo of ESS loaded with Prestige Ford McKinney. All data is pre-loaded. Click any nav item to explore every tool in the platform.</div>
+
+  <div class="slabel">Big Board</div>
+  <div class="stitle">Prestige Ford McKinney — Live Today</div>
+
+  <!-- STORE STATS -->
+  <div class="stat-grid">
+    <div class="stat-box">
+      <div class="stat-num num-gold">187</div>
+      <div class="stat-lbl">Units MTD</div>
+      <div class="stat-sub">Goal: 250</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num num-green">241</div>
+      <div class="stat-lbl">Projected EOM</div>
+      <div class="stat-sub">3.2/day pace</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">63</div>
+      <div class="stat-lbl">Need to Hit</div>
+      <div class="stat-sub">19 days left</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num num-gold">$2,847</div>
+      <div class="stat-lbl">Avg FE Gross</div>
+      <div class="stat-sub">MTD</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">34</div>
+      <div class="stat-lbl">Calls Today</div>
+      <div class="stat-sub">BDC total</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num num-green">7</div>
+      <div class="stat-lbl">Walks Today</div>
+      <div class="stat-sub">4 still here</div>
+    </div>
+  </div>
+
+  <!-- APPOINTMENTS TODAY -->
+  <div class="bb-table-wrap" style="margin-bottom:20px;">
+    <div class="bb-table-head">
+      <div class="bb-table-title">📅 Today's Appointments</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;color:#c8d0e0;letter-spacing:1px;">
+        Scheduled: <strong style="color:#fff;">11</strong> &nbsp;|&nbsp; Showed: <strong style="color:var(--green);">8</strong> &nbsp;|&nbsp; Sold: <strong style="color:var(--accent);">5</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- SP PERFORMANCE TABLE -->
+  <div class="bb-table-wrap">
+    <div class="bb-table-head">
+      <div class="bb-table-title">SP Performance — Best to Worst</div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>SP</th>
+          <th>Calls</th>
+          <th>Uniq</th>
+          <th>Appt Set</th>
+          <th>Showed</th>
+          <th>Sold</th>
+          <th>FE $</th>
+          <th>BE $</th>
+          <th>Units MTD</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="spTableBody"></tbody>
+    </table>
+  </div>
+
+  <!-- WALK REASONS -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px;">
+    <div class="bb-table-wrap">
+      <div class="bb-table-head"><div class="bb-table-title">🚶 Walk Reasons — Today</div></div>
+      <table>
+        <thead><tr><th>Reason</th><th>Count</th></tr></thead>
+        <tbody>
+          <tr><td>Payment too high</td><td class="num-red">2</td></tr>
+          <tr><td>Shopping around</td><td class="num-gold">2</td></tr>
+          <tr><td>Trade value too low</td><td class="num-red">1</td></tr>
+          <tr><td>Needs to think</td><td>1</td></tr>
+          <tr><td>Spouse not present</td><td>1</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="bb-table-wrap">
+      <div class="bb-table-head"><div class="bb-table-title">📊 Benchmark Calculator</div></div>
+      <div style="padding:16px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="stat-box"><div class="stat-num num-green">74%</div><div class="stat-lbl">Close %</div></div>
+          <div class="stat-box"><div class="stat-num num-gold">63%</div><div class="stat-lbl">Show/Set</div></div>
+          <div class="stat-box"><div class="stat-num num-green">82%</div><div class="stat-lbl">Conf %</div></div>
+          <div class="stat-box"><div class="stat-num">18%</div><div class="stat-lbl">Internet %</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- FM FLOOR -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="panel" id="panel-floor">
+  <div class="slabel">FM Floor</div>
+  <div class="stitle">Floor Manager View — Live Status</div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+    <div class="stat-box"><div class="stat-num">14</div><div class="stat-lbl">Total SPs</div></div>
+    <div class="stat-box"><div class="stat-num num-green">5</div><div class="stat-lbl">Available</div></div>
+    <div class="stat-box"><div class="stat-num num-gold">6</div><div class="stat-lbl">With Customer</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:var(--blue);">3</div><div class="stat-lbl">BDC / Phone</div></div>
+  </div>
+  <div class="floor-grid" id="floorGrid"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- GREETER -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="panel" id="panel-greeter">
+  <div class="slabel">Greeter Station</div>
+  <div class="stitle">Customer Check-In — Today</div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+    <div class="stat-box"><div class="stat-num">7</div><div class="stat-lbl">Total Today</div></div>
+    <div class="stat-box"><div class="stat-num num-gold">4</div><div class="stat-lbl">Appointments</div></div>
+    <div class="stat-box"><div class="stat-num num-green">2</div><div class="stat-lbl">Walk-Ins</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:var(--blue);">1</div><div class="stat-lbl">Be-Back</div></div>
+  </div>
+  <div id="greeterList"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- CVE SUBMISSIONS -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="panel" id="panel-cve">
+  <div class="slabel">CVE — Customer Vehicle Evaluations</div>
+  <div class="stitle">Today's Submissions</div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
+    <div class="stat-box"><div class="stat-num">6</div><div class="stat-lbl">Total CVEs Today</div></div>
+    <div class="stat-box"><div class="stat-num num-green">4</div><div class="stat-lbl">PP YES</div></div>
+    <div class="stat-box"><div class="stat-num num-gold">1</div><div class="stat-lbl">SOMEWHAT</div></div>
+  </div>
+  <div id="cveList"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- PP SCRIPTS -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="panel" id="panel-scripts">
+  <div class="slabel">PP Scripts</div>
+  <div class="stitle">Walk · Desk · Objections · Close</div>
+  <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+    <button onclick="showScriptTab('walk')" id="stab-walk" class="stab active-stab" style="background:var(--accent);color:#000;border:none;padding:8px 20px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;cursor:pointer;letter-spacing:1px;">WALK</button>
+    <button onclick="showScriptTab('desk')" id="stab-desk" class="stab" style="background:var(--surface2);color:#fff;border:2px solid var(--border);padding:8px 20px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;cursor:pointer;letter-spacing:1px;">DESK</button>
+    <button onclick="showScriptTab('obj')" id="stab-obj" class="stab" style="background:var(--surface2);color:#fff;border:2px solid var(--border);padding:8px 20px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;cursor:pointer;letter-spacing:1px;">OBJECTIONS</button>
+    <button onclick="showScriptTab('close')" id="stab-close" class="stab" style="background:var(--surface2);color:#fff;border:2px solid var(--border);padding:8px 20px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;cursor:pointer;letter-spacing:1px;">CLOSE</button>
+  </div>
+  <div id="scriptContent"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- EOD -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="panel" id="panel-eod">
+  <div class="slabel">EOD Bulk Entry</div>
+  <div class="stitle">Daily Scorecard — MTD Production</div>
+  <div class="eod-header">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:#c8d0e0;">
+      Prestige Ford McKinney &nbsp;|&nbsp; <span id="todayDate"></span>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <span class="team-badge team-a">A Team</span>
+      <span class="team-badge team-b">B Team</span>
+      <span class="team-badge team-c">C Team</span>
+    </div>
+  </div>
+  <div class="bb-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>SP Name</th>
+          <th>Calls OB</th>
+          <th>Unique</th>
+          <th>Live Conv</th>
+          <th>Covideo</th>
+          <th>Appt Set</th>
+          <th>Conf</th>
+          <th>Showed</th>
+          <th>Sold</th>
+          <th>FE $</th>
+          <th>BE $</th>
+          <th>Units MTD</th>
+          <th>Proj EOM</th>
+          <th>Team</th>
+        </tr>
+      </thead>
+      <tbody id="eodTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- UCM DASHBOARD -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="panel" id="panel-ucm">
+  <div class="slabel">UCM Dashboard</div>
+  <div class="stitle">Manager View — CVE Live Monitor</div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+    <div class="stat-box"><div class="stat-num">6</div><div class="stat-lbl">Total Today</div></div>
+    <div class="stat-box"><div class="stat-num num-green">4</div><div class="stat-lbl">PP YES</div></div>
+    <div class="stat-box"><div class="stat-num num-gold">1</div><div class="stat-lbl">Somewhat</div></div>
+    <div class="stat-box"><div class="stat-num num-red">1</div><div class="stat-lbl">Hesitant</div></div>
+  </div>
+  <div id="ucmList"></div>
+</div>
+
+<!-- DEMO BANNER -->
+<div class="demo-banner">
+  ⚡ You are exploring the ESS Live Sandbox — Prestige Ford McKinney (Demo Data)
+  <a href="/login.html#pricing">View Pricing</a>
+  <a href="/login.html" onclick="setTimeout(()=>{document.getElementById('demoModal')&&openDemo()},500);return true;">Get Started</a>
+</div>
+
+<script>
+// ── DEMO DATA ──
+const DEALER = 'Prestige Ford McKinney';
+const TODAY  = new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+document.getElementById('todayDate').textContent = TODAY;
+
+const SPS = [
+  {name:'Marcus T.',   calls:28,uniq:18,live:9, aSet:6,aConf:5,aShowed:5,aSold:4, fe:3200,be:1800,mtd:22,proj:28,team:'A',status:'With Customer'},
+  {name:'Jasmine R.',  calls:31,uniq:22,live:11,aSet:7,aConf:6,aShowed:6,aSold:4, fe:2950,be:1600,mtd:19,proj:24,team:'B',status:'With Customer'},
+  {name:'Devon L.',    calls:24,uniq:17,live:8, aSet:5,aConf:4,aShowed:4,aSold:3, fe:3100,be:2100,mtd:18,proj:23,team:'A',status:'Available'},
+  {name:'Priya N.',    calls:19,uniq:14,live:6, aSet:4,aConf:3,aShowed:3,aSold:3, fe:2800,be:1400,mtd:17,proj:21,team:'C',status:'With Customer'},
+  {name:'Carlos M.',   calls:22,uniq:15,live:7, aSet:5,aConf:4,aShowed:4,aSold:3, fe:2600,be:1200,mtd:16,proj:20,team:'B',status:'BDC / Phone'},
+  {name:'Tiffany W.',  calls:17,uniq:12,live:5, aSet:4,aConf:3,aShowed:3,aSold:2, fe:2750,be:1500,mtd:15,proj:19,team:'A',status:'Available'},
+  {name:'Randall B.',  calls:20,uniq:14,live:6, aSet:4,aConf:3,aShowed:2,aSold:2, fe:2900,be:1300,mtd:14,proj:18,team:'C',status:'With Customer'},
+  {name:'Keisha D.',   calls:15,uniq:10,live:4, aSet:3,aConf:2,aShowed:2,aSold:2, fe:2650,be:1100,mtd:13,proj:17,team:'B',status:'With Customer'},
+  {name:'Tyler H.',    calls:18,uniq:13,live:5, aSet:3,aConf:3,aShowed:3,aSold:2, fe:2400,be:900, mtd:12,proj:15,team:'A',status:'Available'},
+  {name:'Amanda S.',   calls:12,uniq:9, live:3, aSet:2,aConf:2,aShowed:2,aSold:1, fe:2200,be:800, mtd:10,proj:13,team:'C',status:'BDC / Phone'},
+  {name:'Jerome P.',   calls:14,uniq:10,live:4, aSet:3,aConf:2,aShowed:1,aSold:1, fe:2100,be:750, mtd:9, proj:11,team:'B',status:'With Customer'},
+  {name:'Natalie F.',  calls:10,uniq:7, live:3, aSet:2,aConf:1,aShowed:1,aSold:1, fe:1950,be:600, mtd:8, proj:10,team:'A',status:'Available'},
+  {name:'Darnell C.',  calls:11,uniq:8, live:3, aSet:2,aConf:2,aShowed:2,aSold:1, fe:1800,be:500, mtd:7, proj:9, team:'C',status:'BDC / Phone'},
+  {name:'Brittany K.', calls:9, uniq:6, live:2, aSet:1,aConf:1,aShowed:1,aSold:0, fe:0,   be:0,   mtd:5, proj:6, team:'B',status:'Available'},
+];
+
+const FLOOR_SPS = [
+  {name:'Marcus T.',  status:'With Customer',detail:'2019 F-150 — Appointment · 45 min',color:'with-cust'},
+  {name:'Jasmine R.', status:'With Customer',detail:'2022 Mustang GT — Walk-In · 30 min',color:'with-cust'},
+  {name:'Devon L.',   status:'Available — South',detail:'Last up: 11:42 AM',color:'available'},
+  {name:'Priya N.',   status:'With Customer',detail:'2021 Explorer — Be-Back · 20 min',color:'with-cust'},
+  {name:'Carlos M.',  status:'BDC / Phone',detail:'Outbound calls — 22 completed',color:'bdc'},
+  {name:'Tiffany W.', status:'Available — North',detail:'Last up: 10:15 AM',color:'available'},
+  {name:'Randall B.', status:'With Customer',detail:'2023 Bronco — Internet Lead · 55 min',color:'with-cust'},
+  {name:'Keisha D.',  status:'With Customer',detail:'2020 Edge — Appointment · 15 min',color:'with-cust'},
+  {name:'Tyler H.',   status:'Available — North',detail:'Last up: 12:30 PM',color:'available'},
+  {name:'Amanda S.',  status:'BDC / Phone',detail:'Covideo follow-ups',color:'bdc'},
+  {name:'Jerome P.',  status:'With Customer',detail:'2022 Ranger — Walk-In · 40 min',color:'with-cust'},
+  {name:'Natalie F.', status:'Available — South',detail:'Last up: 1:05 PM',color:'available'},
+  {name:'Darnell C.', status:'BDC / Phone',detail:'Appointment confirmations',color:'bdc'},
+  {name:'Brittany K.',status:'Available — South',detail:'Last up: 9:50 AM',color:'available'},
+];
+
+const VISITORS = [
+  {name:'Michael Chen',    time:'8:42 AM', type:'Appointment', sp:'Marcus T.',    vehicle:'2023 F-150 Lariat',  status:'sold'},
+  {name:'Sandra Williams', time:'9:15 AM', type:'Appointment', sp:'Jasmine R.',   vehicle:'2022 Escape Titanium',status:'sold'},
+  {name:'Robert Torres',   time:'10:00 AM',type:'Walk-In',     sp:'Devon L.',     vehicle:'Pre-Owned Mustang',   status:'sold'},
+  {name:'Angela Davis',    time:'10:30 AM',type:'Appointment', sp:'Priya N.',     vehicle:'2024 Explorer ST',    status:'sold'},
+  {name:'James Murphy',    time:'11:15 AM',type:'Be-Back',     sp:'Randall B.',   vehicle:'2023 Bronco Badlands',status:'working'},
+  {name:'Keisha Johnson',  time:'12:00 PM',type:'Appointment', sp:'Keisha D.',    vehicle:'2022 Edge SEL',       status:'working'},
+  {name:'David Park',      time:'1:30 PM', type:'Walk-In',     sp:'Jerome P.',    vehicle:'2021 Ranger XLT',     status:'working'},
+];
+
+const CVES = [
+  {sp:'Marcus T.',    vehicle:'2018 RAM 1500', miles:'67,400', cond:'Good', payoff:'Lien — est. $8,200', pp:'yes',  commit:'YES',  trade_est:'$18,500–$21,000',time:'9:05 AM'},
+  {sp:'Jasmine R.',   vehicle:'2020 Honda CR-V',miles:'44,200',cond:'Excellent',payoff:'Paid Off',      pp:'yes',  commit:'YES',  trade_est:'$22,000–$24,500',time:'9:48 AM'},
+  {sp:'Devon L.',     vehicle:'2019 Toyota Camry',miles:'58,900',cond:'Good',  payoff:'Paid Off',       pp:'yes',  commit:'MAYBE',trade_est:'$16,500–$18,000',time:'10:22 AM'},
+  {sp:'Priya N.',     vehicle:'2017 Ford Escape',miles:'83,100',cond:'Fair',   payoff:'Lien — est. $4,500',pp:'somewhat',commit:'MAYBE',trade_est:'$9,500–$11,500',time:'11:10 AM'},
+  {sp:'Randall B.',   vehicle:'2021 Chevy Silverado',miles:'31,200',cond:'Excellent',payoff:'Paid Off', pp:'yes',  commit:'YES',  trade_est:'$29,000–$33,000',time:'12:35 PM'},
+  {sp:'Jerome P.',    vehicle:'2016 Ford F-150',miles:'112,000',cond:'Fair',   payoff:'Paid Off',       pp:'hesitant',commit:'NOT TODAY',trade_est:'$11,000–$13,500',time:'1:48 PM'},
+];
+
+const SCRIPTS = {
+  walk: [
+    {title:'🪟 Window Tint — The Hook',label:'SP says at the vehicle:',text:'"I can see you have tint on your vehicle — kept it cooler in the Texas heat, protected the dash from fading, gave you some privacy... hasn\'t it made a difference in your comfort and the condition of the interior?" — Wait for YES. Don\'t fill the silence.'},
+    {title:'🎨 Paint / Ceramic Coating',label:'SP says at the vehicle:',text:'"Your paint still looks pretty solid — if you had a sealant or coating on it, wouldn\'t you say it was worth protecting that investment? Paint doesn\'t fix itself — protection does." — Pause. Let them answer.'},
+    {title:'🛋️ Interior Protection',label:'SP says at the vehicle:',text:'"Seats and carpet have held up really well — with everyday use, weather, kids... couldn\'t you see how that interior protection paid off over time?" — Nod slightly. They will mirror you.'},
+    {title:'🔒 Master Close',label:'After all 5 products — deliver this:',text:'"So when you think about everything that\'s kept your trade in the shape it\'s in today — the tint, the protection, the coatings, the care — wouldn\'t you say that investing in protecting your vehicle was absolutely worth it?" — SILENCE. First one to speak loses.'},
+  ],
+  desk: [
+    {title:'📋 Intro at the Desk',label:'Before going over numbers:',text:'"Before we go over numbers — I want to show you something on your new vehicle that\'s already been taken care of." — Show the addendum. Point to each item. Present with confidence, not apology.'},
+    {title:'💰 Monthly Breakdown',label:'Break it down:',text:'"On a 72-month loan, the protection package breaks down to about $19 a month on a used vehicle. That\'s less than a tank of gas to protect your entire investment. When you look at it that way — it\'s really a no-brainer, isn\'t it?"'},
+    {title:'🔒 Can\'t Remove It',label:'When they push back:',text:'"The protection package is already on the vehicle. We can\'t remove the tint, the ceramic coating, the wheel locks — they\'re part of the unit as it sits. What I can do is make sure you understand everything that\'s covered."'},
+  ],
+  obj: [
+    {title:'"Can you discount it?"',label:'Response:',text:'"The tint alone carries a lifetime guarantee. If you ever have an issue, one service call covers the cost. The package pays for itself the first time you use it. On your loan that\'s about $19 a month. I can\'t discount it — but I can show you exactly why it\'s worth every dollar. Fair enough?"'},
+    {title:'"I don\'t need it"',label:'Response:',text:'"Most people feel that way until something happens. But you said the tint on your trade kept the interior in great shape. You didn\'t need it until you had it, right? The only difference between needing it and not needing it — is timing. And by then it\'s too late."'},
+    {title:'"Just take it off the price"',label:'Response:',text:'"It\'s already on the vehicle. The tint is on the glass, the coating is on the paint, the locks are on the wheels. There\'s nothing to remove. What I can do is walk you through everything that\'s covered — because when you look at the lifetime warranty, your perspective is going to shift."'},
+  ],
+  close: [
+    {title:'✅ The Assumptive Close',label:'Deliver this — don\'t ask, assume:',text:'"So we\'ve got the tint, the ceramic coating, the interior protection, wheel locks, and dent coverage — all with lifetime guarantees. I\'ll make sure all of that is documented on your paperwork." — Move to the next step. Silence is agreement.'},
+    {title:'🎯 The Liar\'s Trap',label:'The most powerful close:',text:'"When we were at your trade — you told me the tint was worth it. You told me the protection made a difference. You said yes — it was valuable. I\'d hate to see you start off on your new vehicle without the same thing you just said you valued. That wouldn\'t make sense — would it?" — They can\'t say no without contradicting themselves.'},
+    {title:'💵 The Monthly Close',label:'When price is the objection:',text:'"We\'re talking about $19 a month on a used vehicle — $28 on a new one. For lifetime protection. That\'s less than one car wash a month. For less than a car wash a month — you\'d want your vehicle protected, right?"'},
+  ],
+};
+
+// ── RENDER FUNCTIONS ──
+
+function renderSPTable() {
+  const tbody = document.getElementById('spTableBody');
+  tbody.innerHTML = SPS.map((sp,i) => {
+    const rank = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i+1);
+    const statusColor = sp.status === 'With Customer' ? 'badge-gold' :
+                        sp.status === 'Available' ? 'badge-green' : 'badge-blue';
+    return `<tr>
+      <td><span style="font-size:16px;margin-right:6px;">${rank}</span><span class="sp-name">${sp.name}</span></td>
+      <td>${sp.calls}</td>
+      <td>${sp.uniq}</td>
+      <td class="num-gold">${sp.aSet}</td>
+      <td class="num-green">${sp.aShowed}</td>
+      <td class="num-gold">${sp.aSold}</td>
+      <td class="${sp.fe>2500?'num-green':''}">$${sp.fe.toLocaleString()}</td>
+      <td>$${sp.be.toLocaleString()}</td>
+      <td class="num-gold">${sp.mtd}</td>
+      <td><span class="badge ${statusColor}">${sp.status.replace(' / Phone','')}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderFloor() {
+  document.getElementById('floorGrid').innerHTML = FLOOR_SPS.map(sp => `
+    <div class="sp-card ${sp.color}">
+      <div class="sp-card-name">${sp.name}</div>
+      <div class="sp-card-status" style="color:${sp.color==='with-cust'?'var(--accent)':sp.color==='available'?'var(--green)':'var(--blue)'};">${sp.status}</div>
+      <div class="sp-card-detail">${sp.detail}</div>
+    </div>
+  `).join('');
+}
+
+function renderGreeter() {
+  document.getElementById('greeterList').innerHTML = VISITORS.map(v => `
+    <div class="visit-card">
+      <div>
+        <div class="visit-name">${v.name}</div>
+        <div class="visit-detail">${v.time} · ${v.type} · SP: ${v.sp} · ${v.vehicle}</div>
+      </div>
+      <span class="badge ${v.status==='sold'?'badge-green':v.status==='working'?'badge-gold':'badge-gray'}">
+        ${v.status==='sold'?'✅ SOLD':v.status==='working'?'⚡ WORKING':'—'}
+      </span>
+    </div>
+  `).join('');
+}
+
+function renderCVE(containerId) {
+  document.getElementById(containerId).innerHTML = CVES.map(c => {
+    const ppClass = c.pp==='yes'?'pp-yes':c.pp==='somewhat'?'pp-somewhat':'pp-hesitant';
+    const ppLabel = c.pp==='yes'?'✅ PP YES':c.pp==='somewhat'?'😐 SOMEWHAT':'🤷 HESITANT';
+    return `
+    <div class="cve-card">
+      <div class="cve-header">
+        <div>
+          <div class="cve-vehicle">${c.vehicle}</div>
+          <div class="cve-sp">SP: ${c.sp} · ${c.time}</div>
+        </div>
+        <span class="pp-temp ${ppClass}">${ppLabel}</span>
+      </div>
+      <div class="cve-grid">
+        <div class="cve-stat"><div class="cve-stat-val">${c.miles}</div><div class="cve-stat-lbl">Miles</div></div>
+        <div class="cve-stat"><div class="cve-stat-val">${c.cond}</div><div class="cve-stat-lbl">Condition</div></div>
+        <div class="cve-stat"><div class="cve-stat-val" style="font-size:14px;">${c.payoff}</div><div class="cve-stat-lbl">Payoff</div></div>
+        <div class="cve-stat"><div class="cve-stat-val" style="font-size:14px;">${c.trade_est}</div><div class="cve-stat-lbl">Est. Trade Range</div></div>
+      </div>
+      <div style="margin-top:12px;display:flex;align-items:center;gap:10px;">
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:#c8d0e0;text-transform:uppercase;letter-spacing:1px;">Commitment:</span>
+        <span class="badge ${c.commit==='YES'?'badge-green':c.commit==='MAYBE'?'badge-gold':'badge-red'}">${c.commit}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderScripts(tab) {
+  const scripts = SCRIPTS[tab] || [];
+  document.getElementById('scriptContent').innerHTML = scripts.map(s => `
+    <div class="script-card">
+      <div class="script-title">${s.title}</div>
+      <div class="script-label">${s.label}</div>
+      <div class="script-text">"${s.text}"</div>
+    </div>
+  `).join('');
+}
+
+function renderEOD() {
+  document.getElementById('eodTableBody').innerHTML = SPS.map(sp => `
+    <tr>
+      <td class="sp-name">${sp.name}</td>
+      <td>${sp.calls}</td>
+      <td>${sp.uniq}</td>
+      <td>${sp.live}</td>
+      <td>${Math.floor(sp.calls*0.3)}</td>
+      <td class="num-gold">${sp.aSet}</td>
+      <td>${sp.aConf}</td>
+      <td class="num-green">${sp.aShowed}</td>
+      <td class="num-gold">${sp.aSold}</td>
+      <td class="${sp.fe>2500?'num-green':''}">$${sp.fe.toLocaleString()}</td>
+      <td>$${sp.be.toLocaleString()}</td>
+      <td class="num-gold">${sp.mtd}</td>
+      <td>${sp.proj}</td>
+      <td><span class="team-badge team-${sp.team.toLowerCase()}">${sp.team}</span></td>
+    </tr>
+  `).join('');
+}
+
+// ── NAVIGATION ──
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  document.getElementById('nav-drawer').classList.remove('open');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function showScriptTab(tab) {
+  ['walk','desk','obj','close'].forEach(t => {
+    const btn = document.getElementById('stab-'+t);
+    if (t===tab) {
+      btn.style.background='var(--accent)';btn.style.color='#000';btn.style.border='none';
+    } else {
+      btn.style.background='var(--surface2)';btn.style.color='#fff';btn.style.border='2px solid var(--border)';
+    }
+  });
+  renderScripts(tab);
+}
+
+// ── INIT ──
+renderSPTable();
+renderFloor();
+renderGreeter();
+renderCVE('cveList');
+renderCVE('ucmList');
+renderScripts('walk');
+renderEOD();
+</script>
+</body>
+</html>
